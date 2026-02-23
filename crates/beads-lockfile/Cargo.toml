@@ -1,0 +1,14 @@
+[package]
+name = "beads-lockfile"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "File locking for the beads system"
+
+[dependencies]
+fs2 = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

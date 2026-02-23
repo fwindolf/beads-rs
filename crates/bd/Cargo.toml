@@ -1,0 +1,40 @@
+[package]
+name = "bd"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "The bd command-line tool for the beads system"
+
+[[bin]]
+name = "bd"
+path = "src/main.rs"
+
+[dependencies]
+beads-core = { path = "../beads-core" }
+beads-storage = { path = "../beads-storage" }
+beads-config = { path = "../beads-config" }
+beads-query = { path = "../beads-query" }
+beads-ui = { path = "../beads-ui" }
+beads-git = { path = "../beads-git" }
+beads-timeparsing = { path = "../beads-timeparsing" }
+beads-lockfile = { path = "../beads-lockfile" }
+beads-formula = { path = "../beads-formula" }
+clap = { workspace = true }
+clap_complete = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+crossterm = { workspace = true }
+rusqlite = { workspace = true }
+ctrlc = "3.4"
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
+predicates = { workspace = true }
+tempfile = { workspace = true }
+insta = { workspace = true }
+pretty_assertions = { workspace = true }

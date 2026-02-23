@@ -1,0 +1,14 @@
+[package]
+name = "beads-query"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Query engine for the beads system"
+
+[dependencies]
+beads-core = { path = "../beads-core" }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }

@@ -1,0 +1,18 @@
+[package]
+name = "beads-config"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Configuration management for the beads system"
+
+[dependencies]
+beads-core = { path = "../beads-core" }
+serde = { workspace = true }
+serde_yaml = { workspace = true }
+figment = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+pretty_assertions = { workspace = true }
+tempfile = { workspace = true }
