@@ -2,6 +2,17 @@
 
 All notable changes to beads-rs will be documented in this file.
 
+## [0.2.1] - 2026-02-23
+
+### Changed
+- `bd onboard` rewritten: writes onboarding content (mulch knowledge + bd task tracking)
+  directly into agent instruction files using HTML markers for safe insert/update
+- Target flags: `--auto`, `--agents`, `--claude`, `--copilot`, `--codex`, `--opencode`
+  (mutually exclusive) with auto-discovery fallback
+- `bd onboard --check` to verify if onboard section is installed
+- `bd onboard --remove` to remove the onboard section (deletes file if empty)
+- 18 unit tests + 4 integration tests for onboard command
+
 ## [0.2.0] - 2026-02-23
 
 ### Added

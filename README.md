@@ -75,7 +75,7 @@ bd graph --all
 
 ### Setup & Workflow (implemented)
 - **`bd quickstart`** — interactive quick-start guide for new users
-- **`bd onboard`** — minimal AGENTS.md snippet for AI agent integration
+- **`bd onboard`** — write onboarding content to agent instruction file (`--agents`, `--claude`, `--copilot`, `--codex`, `--opencode`, `--check`, `--remove`)
 - **`bd prime`** — AI-optimized workflow context (MCP detection, stealth mode)
 - **`bd preflight`** — PR readiness checklist with automated `--check` mode
 - **`bd upgrade`** — version tracking with status/review/ack subcommands

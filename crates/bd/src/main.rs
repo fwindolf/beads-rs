@@ -145,7 +145,7 @@ fn main() {
         Some(Commands::Kv(args)) => commands::kv::run(&ctx, &args),
         Some(Commands::Completion(args)) => commands::completion::run(&ctx, &args),
         Some(Commands::Quickstart) => commands::quickstart::run(&ctx),
-        Some(Commands::Onboard) => commands::onboard::run(&ctx),
+        Some(Commands::Onboard(args)) => commands::onboard::run(&ctx, &args),
         Some(Commands::Bootstrap) => commands::misc::run_bootstrap(&ctx),
         Some(Commands::Preflight(args)) => commands::preflight::run(&ctx, &args),
         Some(Commands::Prime(args)) => commands::prime::run(&ctx, &args),

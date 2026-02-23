@@ -1133,15 +1133,62 @@ fn quickstart_displays_guide() {
 }
 
 #[test]
-fn onboard_displays_agents_snippet() {
-    bd().args(["onboard"])
+fn onboard_creates_file() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    bd().args(["onboard", "--claude"])
+        .current_dir(tmp.path())
         .assert()
         .success()
-        .stdout(predicate::str::contains("bd Onboarding"))
-        .stdout(predicate::str::contains("AGENTS.MD CONTENT"))
-        .stdout(predicate::str::contains("bd prime"))
-        .stdout(predicate::str::contains("bd ready"))
-        .stdout(predicate::str::contains("How it works"));
+        .stdout(predicate::str::contains("Wrote onboarding to CLAUDE.md"));
+
+    let content = std::fs::read_to_string(tmp.path().join("CLAUDE.md")).unwrap();
+    assert!(content.contains("<!-- BEGIN BD ONBOARD -->"));
+    assert!(content.contains("<!-- END BD ONBOARD -->"));
+    assert!(content.contains("mulch prime"));
+    assert!(content.contains("bd create"));
+}
+
+#[test]
+fn onboard_check_reports_installed() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    // First install
+    bd().args(["onboard", "--claude"])
+        .current_dir(tmp.path())
+        .assert()
+        .success();
+    // Then check
+    bd().args(["onboard", "--claude", "--check"])
+        .current_dir(tmp.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Onboard section installed"));
+}
+
+#[test]
+fn onboard_check_reports_missing() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    std::fs::write(tmp.path().join("CLAUDE.md"), "# No onboard\n").unwrap();
+    bd().args(["onboard", "--claude", "--check"])
+        .current_dir(tmp.path())
+        .assert()
+        .failure();
+}
+
+#[test]
+fn onboard_remove_deletes_section() {
+    let tmp = tempfile::TempDir::new().unwrap();
+    // Install first
+    bd().args(["onboard", "--agents"])
+        .current_dir(tmp.path())
+        .assert()
+        .success();
+    // Remove
+    bd().args(["onboard", "--agents", "--remove"])
+        .current_dir(tmp.path())
+        .assert()
+        .success();
+    // File should be deleted (was only the onboard section)
+    assert!(!tmp.path().join("AGENTS.md").exists());
 }
 
 #[test]

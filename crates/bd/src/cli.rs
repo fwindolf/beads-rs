@@ -361,8 +361,8 @@ pub enum Commands {
     /// Quick-start guide for new users.
     Quickstart,
 
-    /// Display minimal snippet for AGENTS.md integration.
-    Onboard,
+    /// Write onboarding content to agent instruction file.
+    Onboard(OnboardArgs),
 
     /// Bootstrap a beads project.
     Bootstrap,
@@ -2096,6 +2096,42 @@ pub enum CompletionCommands {
 // ---------------------------------------------------------------------------
 // Preflight
 // ---------------------------------------------------------------------------
+
+/// Arguments for `bd onboard`.
+#[derive(Args, Debug)]
+pub struct OnboardArgs {
+    /// Auto-discover target file (default).
+    #[arg(long, group = "target")]
+    pub auto: bool,
+
+    /// Write to AGENTS.md.
+    #[arg(long, group = "target")]
+    pub agents: bool,
+
+    /// Write to CLAUDE.md.
+    #[arg(long, group = "target")]
+    pub claude: bool,
+
+    /// Write to .github/copilot-instructions.md.
+    #[arg(long, group = "target")]
+    pub copilot: bool,
+
+    /// Write to CODEX.md.
+    #[arg(long, group = "target")]
+    pub codex: bool,
+
+    /// Write to .opencode/instructions.md.
+    #[arg(long, group = "target")]
+    pub opencode: bool,
+
+    /// Check if onboard section is installed.
+    #[arg(long, conflicts_with = "remove")]
+    pub check: bool,
+
+    /// Remove the onboard section instead of writing it.
+    #[arg(long, conflicts_with = "check")]
+    pub remove: bool,
+}
 
 /// Arguments for `bd preflight`.
 #[derive(Args, Debug)]
