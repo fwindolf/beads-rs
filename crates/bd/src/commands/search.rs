@@ -1,6 +1,6 @@
 //! `bd search` -- full-text search across issues.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::{DateTime, Utc};
 
 use beads_core::enums::{IssueType, Status};
@@ -156,7 +156,7 @@ pub fn run(ctx: &RuntimeContext, args: &SearchArgs) -> Result<()> {
     } else {
         println!("Found {} issues matching '{}':\n", issues.len(), args.query);
         let headers = &["ID", "PRI", "TYPE", "STATUS", "TITLE", "ASSIGNEE"];
-        let rows: Vec<Vec<String>> = issues.iter().map(|i| format_issue_row(i)).collect();
+        let rows: Vec<Vec<String>> = issues.iter().map(format_issue_row).collect();
         output_table(headers, &rows);
     }
 

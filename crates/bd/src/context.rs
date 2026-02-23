@@ -25,9 +25,11 @@ pub struct RuntimeContext {
     pub json: bool,
 
     /// Sandbox mode: disables auto-sync.
+    #[allow(dead_code)]
     pub sandbox: bool,
 
     /// Allow operations on potentially stale data.
+    #[allow(dead_code)]
     pub allow_stale: bool,
 
     /// Read-only mode: block write operations.
@@ -89,6 +91,7 @@ impl RuntimeContext {
     }
 
     /// Returns `true` if the `.beads` directory exists relative to the given path.
+    #[allow(dead_code)]
     pub fn beads_dir_exists(base: &Path) -> bool {
         base.join(".beads").is_dir()
     }

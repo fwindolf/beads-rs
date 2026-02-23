@@ -8,7 +8,7 @@
 //!
 //! Other subcommands remain stubs.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use beads_formula::engine;
 use beads_formula::parser;
@@ -52,14 +52,11 @@ fn cmd_pour(ctx: &RuntimeContext, args: &crate::cli::MolPourArgs) -> Result<()> 
         .context("formula name or path is required")?;
 
     let cwd = std::env::current_dir()?;
-    let path = parser::find_formula(formula_name, &cwd)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
-    let formula = parser::load_formula(&path)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let path = parser::find_formula(formula_name, &cwd).map_err(|e| anyhow::anyhow!("{}", e))?;
+    let formula = parser::load_formula(&path).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     let vars = parse_var_flags(&args.vars)?;
-    let cooked = engine::cook(&formula, &vars)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let cooked = engine::cook(&formula, &vars).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     if cooked.is_empty() {
         println!("No steps to create (all filtered by conditions).");
@@ -84,14 +81,11 @@ fn cmd_wisp(ctx: &RuntimeContext, args: &crate::cli::MolWispArgs) -> Result<()> 
         .context("formula name or path is required")?;
 
     let cwd = std::env::current_dir()?;
-    let path = parser::find_formula(formula_name, &cwd)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
-    let formula = parser::load_formula(&path)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let path = parser::find_formula(formula_name, &cwd).map_err(|e| anyhow::anyhow!("{}", e))?;
+    let formula = parser::load_formula(&path).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     let vars = parse_var_flags(&args.vars)?;
-    let cooked = engine::cook(&formula, &vars)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let cooked = engine::cook(&formula, &vars).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     if cooked.is_empty() {
         println!("No steps to create (all filtered by conditions).");
@@ -132,10 +126,7 @@ fn print_pour_preview(
 // ---------------------------------------------------------------------------
 
 fn cmd_show(ctx: &RuntimeContext, args: &crate::cli::MolShowArgs) -> Result<()> {
-    let id = args
-        .id
-        .as_deref()
-        .context("molecule ID is required")?;
+    let id = args.id.as_deref().context("molecule ID is required")?;
 
     let conn = open_db(ctx)?;
 
@@ -210,10 +201,7 @@ fn cmd_show(ctx: &RuntimeContext, args: &crate::cli::MolShowArgs) -> Result<()> 
 // ---------------------------------------------------------------------------
 
 fn cmd_progress(ctx: &RuntimeContext, args: &crate::cli::MolProgressArgs) -> Result<()> {
-    let id = args
-        .id
-        .as_deref()
-        .context("molecule ID is required")?;
+    let id = args.id.as_deref().context("molecule ID is required")?;
 
     let conn = open_db(ctx)?;
 
@@ -260,11 +248,7 @@ fn cmd_progress(ctx: &RuntimeContext, args: &crate::cli::MolProgressArgs) -> Res
         let bar_width = 30;
         let filled = (pct as usize * bar_width) / 100;
         let empty = bar_width - filled;
-        println!(
-            "  [{}{}]",
-            "#".repeat(filled),
-            "-".repeat(empty),
-        );
+        println!("  [{}{}]", "#".repeat(filled), "-".repeat(empty),);
     }
 
     Ok(())
@@ -289,8 +273,7 @@ fn open_db(ctx: &RuntimeContext) -> Result<rusqlite::Connection> {
 
     rusqlite::Connection::open_with_flags(
         &db_path,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
-            | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
     )
     .with_context(|| format!("failed to open database: {}", db_path.display()))
 }

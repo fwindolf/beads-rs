@@ -386,8 +386,9 @@ define_enum! {
 // ===========================================================================
 
 /// Categorises audit trail events.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 pub enum EventType {
+    #[default]
     Created,
     Updated,
     StatusChanged,
@@ -425,12 +426,6 @@ impl EventType {
     /// Returns `true` if this is the default variant.
     pub fn is_default(&self) -> bool {
         matches!(self, Self::Created)
-    }
-}
-
-impl Default for EventType {
-    fn default() -> Self {
-        Self::Created
     }
 }
 

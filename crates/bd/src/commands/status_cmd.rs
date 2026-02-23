@@ -1,6 +1,6 @@
 //! `bd status` -- get or set issue status.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use beads_core::enums::{IssueType, Status};
@@ -97,11 +97,8 @@ pub fn run(ctx: &RuntimeContext, args: &StatusCmdArgs) -> Result<()> {
 
             sql.push_str(" WHERE id = ?3");
 
-            conn.execute(
-                &sql,
-                rusqlite::params![new_status, &now_str, &args.id],
-            )
-            .with_context(|| format!("failed to update status for {}", args.id))?;
+            conn.execute(&sql, rusqlite::params![new_status, &now_str, &args.id])
+                .with_context(|| format!("failed to update status for {}", args.id))?;
 
             // Record "status_changed" event
             conn.execute(
@@ -120,7 +117,10 @@ pub fn run(ctx: &RuntimeContext, args: &StatusCmdArgs) -> Result<()> {
                 let issue = load_issue_by_id(&conn, &args.id)?;
                 output_json(&vec![issue]);
             } else if !ctx.quiet {
-                println!("Status of {} changed: {} -> {}", args.id, current_status, new_status);
+                println!(
+                    "Status of {} changed: {} -> {}",
+                    args.id, current_status, new_status
+                );
             }
         }
     }

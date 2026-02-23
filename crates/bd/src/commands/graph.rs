@@ -8,7 +8,7 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::io::{self, Write};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::GraphArgs;
 use crate::context::RuntimeContext;
@@ -41,16 +41,12 @@ struct DepGraph {
     /// Forward adjacency: from -> [to]  (dependency direction: `from` depends on `to`).
     forward: HashMap<String, Vec<String>>,
     /// Reverse adjacency: to -> [from].
+    #[allow(dead_code)]
     reverse: HashMap<String, Vec<String>>,
 }
 
 // Blocking dependency types that form the DAG structure.
-const BLOCKING_TYPES: &[&str] = &[
-    "blocks",
-    "parent-child",
-    "conditional-blocks",
-    "waits-for",
-];
+const BLOCKING_TYPES: &[&str] = &["blocks", "parent-child", "conditional-blocks", "waits-for"];
 
 // ---------------------------------------------------------------------------
 // Entry point
@@ -76,8 +72,7 @@ pub fn run(ctx: &RuntimeContext, args: &GraphArgs) -> Result<()> {
 
     let conn = rusqlite::Connection::open_with_flags(
         &db_path,
-        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
-            | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+        rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
     )
     .with_context(|| format!("failed to open database: {}", db_path.display()))?;
 
@@ -162,7 +157,13 @@ fn run_all(ctx: &RuntimeContext, args: &GraphArgs, conn: &rusqlite::Connection) 
         if let Ok((title, status, priority)) = conn.query_row(
             "SELECT title, status, priority FROM issues WHERE id = ?1",
             rusqlite::params![mid],
-            |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?, row.get::<_, i32>(2)?)),
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, i32>(2)?,
+                ))
+            },
         ) {
             node_map.insert(
                 mid.clone(),
@@ -212,7 +213,7 @@ fn run_all(ctx: &RuntimeContext, args: &GraphArgs, conn: &rusqlite::Connection) 
     }
 
     // Sort components by size descending so largest graphs appear first.
-    components.sort_by(|a, b| b.len().cmp(&a.len()));
+    components.sort_by_key(|b| std::cmp::Reverse(b.len()));
 
     // Build and render each component.
     if ctx.json {
@@ -248,8 +249,7 @@ fn run_all(ctx: &RuntimeContext, args: &GraphArgs, conn: &rusqlite::Connection) 
         }
 
         // Summarize singletons.
-        let singletons: Vec<&Vec<String>> =
-            components.iter().filter(|c| c.len() == 1).collect();
+        let singletons: Vec<&Vec<String>> = components.iter().filter(|c| c.len() == 1).collect();
         if !singletons.is_empty() {
             let _ = writeln!(handle);
             let _ = writeln!(
@@ -600,8 +600,7 @@ fn render_to<W: Write>(
 ) -> Result<()> {
     if ctx.json {
         let json = graph_to_json(graph);
-        let s = serde_json::to_string_pretty(&json)
-            .context("failed to serialize graph JSON")?;
+        let s = serde_json::to_string_pretty(&json).context("failed to serialize graph JSON")?;
         let _ = writeln!(w, "{}", s);
     } else if args.dot {
         render_dot(graph, w);
@@ -638,16 +637,14 @@ fn render_compact<W: Write>(graph: &DepGraph, w: &mut W) {
         }
 
         let label = if *layer_num == 0 {
-            format!("LAYER 0 (ready)")
+            "LAYER 0 (ready)".to_string()
         } else {
             format!("LAYER {}", layer_num)
         };
         let _ = writeln!(w, "{}", label);
 
         let nodes = layers.get_mut(layer_num).unwrap();
-        nodes.sort_by(|a, b| {
-            a.priority.cmp(&b.priority).then_with(|| a.id.cmp(&b.id))
-        });
+        nodes.sort_by(|a, b| a.priority.cmp(&b.priority).then_with(|| a.id.cmp(&b.id)));
 
         for node in nodes.iter() {
             let sym = status_sym(&node.status);

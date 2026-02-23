@@ -3,7 +3,7 @@
 //! Runs an arbitrary SQL query in read-only mode and prints results
 //! as an aligned table (or JSON with `--json`).
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use rusqlite::types::Value;
 
 use crate::cli::QueryArgs;
@@ -104,7 +104,11 @@ pub fn run(ctx: &RuntimeContext, args: &QueryArgs) -> Result<()> {
 
         let headers: Vec<&str> = col_names.iter().map(|s| s.as_str()).collect();
         output_table(&headers, &str_rows);
-        println!("({} row{})", all_rows.len(), if all_rows.len() == 1 { "" } else { "s" });
+        println!(
+            "({} row{})",
+            all_rows.len(),
+            if all_rows.len() == 1 { "" } else { "s" }
+        );
     }
 
     Ok(())

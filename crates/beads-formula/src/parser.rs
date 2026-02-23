@@ -48,12 +48,7 @@ pub fn find_formula(name: &str, cwd: &Path) -> Result<PathBuf, FormulaError> {
     }
 
     // Standard suffixes to try
-    let suffixes = [
-        ".formula.toml",
-        ".formula.json",
-        ".toml",
-        ".json",
-    ];
+    let suffixes = [".formula.toml", ".formula.json", ".toml", ".json"];
 
     // 2. Current directory
     for suffix in &suffixes {

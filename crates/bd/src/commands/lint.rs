@@ -7,7 +7,7 @@
 //! - Orphaned dependencies (dependencies referencing non-existent issues)
 //! - Issues with status values not in the known set
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::LintArgs;
 use crate::context::RuntimeContext;
@@ -25,15 +25,7 @@ const VALID_STATUSES: &[&str] = &[
 
 /// Known valid issue types.
 const VALID_TYPES: &[&str] = &[
-    "bug",
-    "feature",
-    "task",
-    "epic",
-    "chore",
-    "decision",
-    "gate",
-    "event",
-    "wisp",
+    "bug", "feature", "task", "epic", "chore", "decision", "gate", "event", "wisp",
 ];
 
 /// Execute the `bd lint` command.
@@ -64,19 +56,14 @@ pub fn run(ctx: &RuntimeContext, _args: &LintArgs) -> Result<()> {
 
     // 1. Empty titles
     {
-        let mut stmt = conn.prepare(
-            "SELECT id FROM issues WHERE title IS NULL OR title = ''",
-        )?;
+        let mut stmt = conn.prepare("SELECT id FROM issues WHERE title IS NULL OR title = ''")?;
         let ids: Vec<String> = stmt
             .query_map([], |row| row.get(0))?
             .filter_map(|r| r.ok())
             .collect();
         if !ids.is_empty() {
             errors += ids.len() as u32;
-            println!(
-                "[ERROR] {} issue(s) with empty titles:",
-                ids.len()
-            );
+            println!("[ERROR] {} issue(s) with empty titles:", ids.len());
             for id in &ids {
                 println!("  - {}", id);
             }
@@ -86,9 +73,8 @@ pub fn run(ctx: &RuntimeContext, _args: &LintArgs) -> Result<()> {
 
     // 2. Invalid priorities (outside 0-4)
     {
-        let mut stmt = conn.prepare(
-            "SELECT id, priority FROM issues WHERE priority < 0 OR priority > 4",
-        )?;
+        let mut stmt =
+            conn.prepare("SELECT id, priority FROM issues WHERE priority < 0 OR priority > 4")?;
         let bad: Vec<(String, i32)> = stmt
             .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
             .filter_map(|r| r.ok())
@@ -124,10 +110,7 @@ pub fn run(ctx: &RuntimeContext, _args: &LintArgs) -> Result<()> {
             .collect();
         if !bad.is_empty() {
             warnings += bad.len() as u32;
-            println!(
-                "[WARN] {} issue(s) with unrecognized status:",
-                bad.len()
-            );
+            println!("[WARN] {} issue(s) with unrecognized status:", bad.len());
             for (id, status) in &bad {
                 println!("  - {}: status=\"{}\"", id, status);
             }
@@ -153,10 +136,7 @@ pub fn run(ctx: &RuntimeContext, _args: &LintArgs) -> Result<()> {
             .collect();
         if !bad.is_empty() {
             warnings += bad.len() as u32;
-            println!(
-                "[WARN] {} issue(s) with unrecognized type:",
-                bad.len()
-            );
+            println!("[WARN] {} issue(s) with unrecognized type:", bad.len());
             for (id, itype) in &bad {
                 println!("  - {}: type=\"{}\"", id, itype);
             }

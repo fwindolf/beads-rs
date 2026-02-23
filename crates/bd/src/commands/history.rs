@@ -1,6 +1,6 @@
 //! `bd history` -- show event history for an issue.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::HistoryArgs;
 use crate::context::RuntimeContext;

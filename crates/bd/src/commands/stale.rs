@@ -1,6 +1,6 @@
 //! `bd stale` -- show issues not updated in N days.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::StaleArgs;
 use crate::context::RuntimeContext;

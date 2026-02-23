@@ -9,7 +9,7 @@
 //!
 //! If no delegate is found, a helpful error message is printed.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::MailArgs;
 use crate::context::RuntimeContext;

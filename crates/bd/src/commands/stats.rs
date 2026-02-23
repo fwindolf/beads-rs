@@ -1,6 +1,6 @@
 //! `bd stats` -- show project statistics.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::StatsArgs;
 use crate::context::RuntimeContext;
@@ -37,10 +37,7 @@ pub fn run(ctx: &RuntimeContext, _args: &StatsArgs) -> Result<()> {
 
     let count_status = |status: &str| -> i64 {
         conn.query_row(
-            &format!(
-                "SELECT COUNT(*) FROM issues {} AND status = ?1",
-                base_where
-            ),
+            &format!("SELECT COUNT(*) FROM issues {} AND status = ?1", base_where),
             rusqlite::params![status],
             |row| row.get(0),
         )

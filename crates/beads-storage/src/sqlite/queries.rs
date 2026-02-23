@@ -6,7 +6,7 @@ use beads_core::filter::WorkFilter;
 use beads_core::issue::Issue;
 
 use crate::error::Result;
-use crate::sqlite::issues::{format_datetime, scan_issue, ISSUE_COLUMNS};
+use crate::sqlite::issues::{ISSUE_COLUMNS, format_datetime, scan_issue};
 use crate::sqlite::store::SqliteStore;
 use crate::traits::{BlockedIssue, EpicStatus, Statistics};
 
@@ -284,40 +284,35 @@ impl SqliteStore {
     /// Returns aggregate statistics.
     pub fn get_statistics_impl(&self) -> Result<Statistics> {
         let conn = self.lock_conn()?;
-        let mut stats = Statistics::default();
-
-        stats.total_issues = conn.query_row(
-            "SELECT COUNT(*) FROM issues",
-            [],
-            |row| row.get(0),
-        )?;
-        stats.open_issues = conn.query_row(
+        let total_issues = conn.query_row("SELECT COUNT(*) FROM issues", [], |row| row.get(0))?;
+        let open_issues = conn.query_row(
             "SELECT COUNT(*) FROM issues WHERE status = 'open'",
             [],
             |row| row.get(0),
         )?;
-        stats.closed_issues = conn.query_row(
+        let closed_issues = conn.query_row(
             "SELECT COUNT(*) FROM issues WHERE status = 'closed'",
             [],
             |row| row.get(0),
         )?;
-        stats.in_progress_issues = conn.query_row(
+        let in_progress_issues = conn.query_row(
             "SELECT COUNT(*) FROM issues WHERE status = 'in_progress'",
             [],
             |row| row.get(0),
         )?;
-        stats.blocked_issues = conn.query_row(
+        let blocked_issues = conn.query_row(
             "SELECT COUNT(*) FROM issues WHERE status = 'blocked'",
             [],
             |row| row.get(0),
         )?;
-        stats.deferred_issues = conn.query_row(
+        let deferred_issues = conn.query_row(
             "SELECT COUNT(*) FROM issues WHERE status = 'deferred'",
             [],
             |row| row.get(0),
         )?;
 
         // By type.
+        let mut by_type = Vec::new();
         {
             let mut stmt = conn.prepare(
                 "SELECT issue_type, COUNT(*) FROM issues GROUP BY issue_type ORDER BY COUNT(*) DESC",
@@ -326,24 +321,25 @@ impl SqliteStore {
                 Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
             })?;
             for row in rows {
-                stats.by_type.push(row?);
+                by_type.push(row?);
             }
         }
 
         // By priority.
+        let mut by_priority = Vec::new();
         {
             let mut stmt = conn.prepare(
                 "SELECT priority, COUNT(*) FROM issues GROUP BY priority ORDER BY priority ASC",
             )?;
-            let rows = stmt.query_map([], |row| {
-                Ok((row.get::<_, i32>(0)?, row.get::<_, i64>(1)?))
-            })?;
+            let rows =
+                stmt.query_map([], |row| Ok((row.get::<_, i32>(0)?, row.get::<_, i64>(1)?)))?;
             for row in rows {
-                stats.by_priority.push(row?);
+                by_priority.push(row?);
             }
         }
 
         // By assignee.
+        let mut by_assignee = Vec::new();
         {
             let mut stmt = conn.prepare(
                 "SELECT COALESCE(assignee, '(unassigned)'), COUNT(*)
@@ -356,11 +352,21 @@ impl SqliteStore {
                 Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
             })?;
             for row in rows {
-                stats.by_assignee.push(row?);
+                by_assignee.push(row?);
             }
         }
 
-        Ok(stats)
+        Ok(Statistics {
+            total_issues,
+            open_issues,
+            closed_issues,
+            in_progress_issues,
+            blocked_issues,
+            deferred_issues,
+            by_type,
+            by_priority,
+            by_assignee,
+        })
     }
 }
 
@@ -406,9 +412,7 @@ mod tests {
         };
         store.add_dependency_impl(&dep, "alice").unwrap();
 
-        let work = store
-            .get_ready_work_impl(&WorkFilter::default())
-            .unwrap();
+        let work = store.get_ready_work_impl(&WorkFilter::default()).unwrap();
         let ids: Vec<&str> = work.iter().map(|i| i.id.as_str()).collect();
         // blocker is ready (it blocks others but is not itself blocked).
         assert!(ids.contains(&"bd-blk1"));

@@ -52,13 +52,7 @@ impl Storage for SqliteStore {
         self.update_issue_impl(id, updates, actor)
     }
 
-    fn close_issue(
-        &self,
-        id: &str,
-        reason: &str,
-        actor: &str,
-        session: &str,
-    ) -> Result<()> {
+    fn close_issue(&self, id: &str, reason: &str, actor: &str, session: &str) -> Result<()> {
         self.close_issue_impl(id, reason, actor, session)
     }
 
@@ -74,12 +68,7 @@ impl Storage for SqliteStore {
         self.add_dependency_impl(dep, actor)
     }
 
-    fn remove_dependency(
-        &self,
-        issue_id: &str,
-        depends_on_id: &str,
-        actor: &str,
-    ) -> Result<()> {
+    fn remove_dependency(&self, issue_id: &str, depends_on_id: &str, actor: &str) -> Result<()> {
         self.remove_dependency_impl(issue_id, depends_on_id, actor)
     }
 
@@ -143,12 +132,7 @@ impl Storage for SqliteStore {
         self.get_epics_eligible_for_closure_impl()
     }
 
-    fn add_comment(
-        &self,
-        issue_id: &str,
-        author: &str,
-        text: &str,
-    ) -> Result<Comment> {
+    fn add_comment(&self, issue_id: &str, author: &str, text: &str) -> Result<Comment> {
         self.add_comment_impl(issue_id, author, text)
     }
 

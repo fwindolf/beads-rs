@@ -8,15 +8,7 @@ use crate::output::output_json;
 
 /// Built-in issue types, matching the `IssueType` enum in beads-core.
 const BUILTIN_TYPES: &[&str] = &[
-    "bug",
-    "feature",
-    "task",
-    "epic",
-    "chore",
-    "decision",
-    "message",
-    "molecule",
-    "event",
+    "bug", "feature", "task", "epic", "chore", "decision", "message", "molecule", "event",
 ];
 
 /// Execute the `bd types` command.

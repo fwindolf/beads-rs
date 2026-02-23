@@ -108,9 +108,7 @@ fn is_ephemeral_branch() -> bool {
 
 /// Check if any git remote is configured.
 fn has_git_remote() -> bool {
-    let output = std::process::Command::new("git")
-        .args(["remote"])
-        .output();
+    let output = std::process::Command::new("git").args(["remote"]).output();
     match output {
         Ok(o) => !String::from_utf8_lossy(&o.stdout).trim().is_empty(),
         Err(_) => false,

@@ -1,6 +1,6 @@
 //! `bd defer` -- defer an issue for later.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use beads_core::enums::{IssueType, Status};

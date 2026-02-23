@@ -56,9 +56,10 @@ impl SqliteStore {
 
     /// Sets connection pragmas (WAL mode, foreign keys, busy timeout).
     fn configure_connection(&self) -> Result<()> {
-        let conn = self.conn.lock().map_err(|e| {
-            StorageError::Connection(format!("mutex poisoned: {e}"))
-        })?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| StorageError::Connection(format!("mutex poisoned: {e}")))?;
 
         conn.execute_batch(
             "PRAGMA journal_mode = WAL;
@@ -73,9 +74,10 @@ impl SqliteStore {
     /// Creates all tables and indexes if they do not exist, then runs
     /// migrations.
     fn init_schema(&self) -> Result<()> {
-        let conn = self.conn.lock().map_err(|e| {
-            StorageError::Connection(format!("mutex poisoned: {e}"))
-        })?;
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| StorageError::Connection(format!("mutex poisoned: {e}")))?;
 
         // Check if schema is already at current version.
         let version: std::result::Result<i32, _> = conn.query_row(
@@ -88,17 +90,21 @@ impl SqliteStore {
         );
         if let Ok(v) = version {
             if v >= schema::CURRENT_SCHEMA_VERSION {
-                debug!(version = v, "schema already at current version, skipping init");
+                debug!(
+                    version = v,
+                    "schema already at current version, skipping init"
+                );
                 return Ok(());
             }
         }
 
         // Execute DDL statements.
         for stmt in schema::SCHEMA_STATEMENTS {
-            conn.execute_batch(stmt).map_err(|e| StorageError::Migration {
-                name: "init_schema".into(),
-                reason: format!("{e}\nStatement: {}", truncate(stmt, 120)),
-            })?;
+            conn.execute_batch(stmt)
+                .map_err(|e| StorageError::Migration {
+                    name: "init_schema".into(),
+                    reason: format!("{e}\nStatement: {}", truncate(stmt, 120)),
+                })?;
         }
 
         // Insert default config (INSERT OR IGNORE to be idempotent).
@@ -126,7 +132,10 @@ impl SqliteStore {
             reason: e.to_string(),
         })?;
 
-        info!("schema initialized (version {})", schema::CURRENT_SCHEMA_VERSION);
+        info!(
+            "schema initialized (version {})",
+            schema::CURRENT_SCHEMA_VERSION
+        );
         Ok(())
     }
 
@@ -149,10 +158,11 @@ impl SqliteStore {
             }
 
             debug!(name, "applying migration");
-            conn.execute_batch(sql).map_err(|e| StorageError::Migration {
-                name: name.to_string(),
-                reason: e.to_string(),
-            })?;
+            conn.execute_batch(sql)
+                .map_err(|e| StorageError::Migration {
+                    name: name.to_string(),
+                    reason: e.to_string(),
+                })?;
 
             conn.execute(
                 "INSERT INTO metadata (key, value) VALUES (?1, ?2)",
@@ -167,12 +177,10 @@ impl SqliteStore {
     }
 
     /// Acquires the connection lock. Helper used by all operation modules.
-    pub(crate) fn lock_conn(
-        &self,
-    ) -> Result<std::sync::MutexGuard<'_, Connection>> {
-        self.conn.lock().map_err(|e| {
-            StorageError::Connection(format!("mutex poisoned: {e}"))
-        })
+    pub(crate) fn lock_conn(&self) -> Result<std::sync::MutexGuard<'_, Connection>> {
+        self.conn
+            .lock()
+            .map_err(|e| StorageError::Connection(format!("mutex poisoned: {e}")))
     }
 }
 
@@ -217,10 +225,7 @@ mod tests {
                 |row| row.get(0),
             )
             .unwrap();
-        assert_eq!(
-            version,
-            schema::CURRENT_SCHEMA_VERSION.to_string()
-        );
+        assert_eq!(version, schema::CURRENT_SCHEMA_VERSION.to_string());
     }
 
     #[test]

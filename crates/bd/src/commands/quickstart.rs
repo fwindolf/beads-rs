@@ -14,11 +14,12 @@ pub fn run(_ctx: &RuntimeContext) -> Result<()> {
     println!();
 
     println!("{}", render_bold("GETTING STARTED"));
-    println!("  {}   Initialize bd in your project", render_accent("bd init"));
-    println!("            Creates .beads/ directory with project-specific database");
     println!(
-        "            Auto-detects prefix from directory name (e.g., myapp-1, myapp-2)"
+        "  {}   Initialize bd in your project",
+        render_accent("bd init")
     );
+    println!("            Creates .beads/ directory with project-specific database");
+    println!("            Auto-detects prefix from directory name (e.g., myapp-1, myapp-2)");
     println!();
     println!(
         "  {}   Initialize with custom prefix",
@@ -49,7 +50,10 @@ pub fn run(_ctx: &RuntimeContext) -> Result<()> {
         "  {}  List by priority (0-4, 0=highest)",
         render_accent("bd list --priority 0")
     );
-    println!("  {}       Show issue details", render_accent("bd show bd-1"));
+    println!(
+        "  {}       Show issue details",
+        render_accent("bd show bd-1")
+    );
     println!();
 
     println!("{}", render_bold("MANAGING DEPENDENCIES"));
@@ -96,10 +100,7 @@ pub fn run(_ctx: &RuntimeContext) -> Result<()> {
     println!();
 
     println!("{}", render_bold("UPDATING ISSUES"));
-    println!(
-        "  {}",
-        render_accent("bd update bd-1 --status in_progress")
-    );
+    println!("  {}", render_accent("bd update bd-1 --status in_progress"));
     println!("  {}", render_accent("bd update bd-1 --priority 0"));
     println!("  {}", render_accent("bd update bd-1 --assignee bob"));
     println!();
@@ -120,7 +121,10 @@ pub fn run(_ctx: &RuntimeContext) -> Result<()> {
         "    3. {} in current directory or ancestors",
         render_accent(".beads/*.db")
     );
-    println!("    4. {} as fallback", render_accent("~/.beads/default.db"));
+    println!(
+        "    4. {} as fallback",
+        render_accent("~/.beads/default.db")
+    );
     println!();
 
     println!("{}", render_bold("AGENT INTEGRATION"));

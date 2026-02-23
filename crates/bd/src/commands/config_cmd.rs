@@ -1,6 +1,6 @@
 //! `bd config` -- manage configuration (set/get/list/unset).
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::{ConfigArgs, ConfigCommands};
 use crate::context::RuntimeContext;

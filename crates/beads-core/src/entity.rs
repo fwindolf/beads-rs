@@ -6,7 +6,7 @@ use std::fmt;
 /// A structured reference to an entity (human, agent, or org).
 ///
 /// Can be rendered as a URI: `hop://<platform>/<org>/<id>`
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EntityRef {
     /// Human-readable identifier (e.g., "polecat/Nux", "mayor").
     #[serde(default, skip_serializing_if = "String::is_empty")]
@@ -42,17 +42,6 @@ impl EntityRef {
             return None;
         }
         Some(format!("hop://{}/{}/{}", self.platform, self.org, self.id))
-    }
-}
-
-impl Default for EntityRef {
-    fn default() -> Self {
-        Self {
-            name: String::new(),
-            platform: String::new(),
-            org: String::new(),
-            id: String::new(),
-        }
     }
 }
 

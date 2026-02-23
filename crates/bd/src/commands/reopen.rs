@@ -1,6 +1,6 @@
 //! `bd reopen` -- reopen a closed issue.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use beads_core::enums::{IssueType, Status};

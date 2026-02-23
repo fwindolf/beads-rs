@@ -1,6 +1,6 @@
 //! `bd supersede` -- mark an issue as superseded by another.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use crate::cli::SupersedeArgs;

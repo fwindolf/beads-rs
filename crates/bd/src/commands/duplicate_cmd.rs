@@ -1,6 +1,6 @@
 //! `bd duplicate` -- mark an issue as a duplicate of another.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use crate::cli::DuplicateCmdArgs;

@@ -3,7 +3,7 @@
 use std::process::Command;
 
 use anyhow::Result;
-use beads_ui::styles::{render_pass_icon, render_fail_icon, render_warn_icon, render_skip_icon};
+use beads_ui::styles::{render_fail_icon, render_pass_icon, render_skip_icon, render_warn_icon};
 use serde::Serialize;
 
 use crate::cli::PreflightArgs;
@@ -58,11 +58,7 @@ pub fn run(ctx: &RuntimeContext, args: &PreflightArgs) -> Result<()> {
 }
 
 fn run_checks(ctx: &RuntimeContext) {
-    let mut results = Vec::new();
-
-    results.push(run_test_check());
-    results.push(run_lint_check());
-    results.push(run_version_sync_check());
+    let results = vec![run_test_check(), run_lint_check(), run_version_sync_check()];
 
     let mut all_passed = true;
     let mut pass_count = 0;
@@ -111,8 +107,6 @@ fn run_checks(ctx: &RuntimeContext) {
 
             if r.skipped {
                 println!("{icon} {} (skipped)", r.name);
-            } else if r.warning {
-                println!("{icon} {}", r.name);
             } else {
                 println!("{icon} {}", r.name);
             }
@@ -141,9 +135,7 @@ fn run_checks(ctx: &RuntimeContext) {
 
 fn run_test_check() -> CheckResult {
     let command = "cargo test --workspace".to_string();
-    let result = Command::new("cargo")
-        .args(["test", "--workspace"])
-        .output();
+    let result = Command::new("cargo").args(["test", "--workspace"]).output();
 
     match result {
         Ok(output) => CheckResult {

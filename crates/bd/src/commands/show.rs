@@ -1,6 +1,6 @@
 //! `bd show` -- display issue details.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::{DateTime, Utc};
 
 use beads_core::enums::{IssueType, Status};

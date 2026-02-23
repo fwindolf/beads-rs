@@ -3,7 +3,7 @@
 //! Provides CRUD operations on the `metadata` table in the beads database.
 //! Internal keys (prefixed with `migration:`) are excluded from `list` output.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::{KvArgs, KvCommands};
 use crate::context::RuntimeContext;
@@ -64,12 +64,7 @@ fn run_get(ctx: &RuntimeContext, db_path: &std::path::Path, key: &str) -> Result
     Ok(())
 }
 
-fn run_set(
-    ctx: &RuntimeContext,
-    db_path: &std::path::Path,
-    key: &str,
-    value: &str,
-) -> Result<()> {
+fn run_set(ctx: &RuntimeContext, db_path: &std::path::Path, key: &str, value: &str) -> Result<()> {
     if ctx.readonly {
         bail!("cannot set metadata in read-only mode");
     }
@@ -102,8 +97,8 @@ fn run_list(ctx: &RuntimeContext, db_path: &std::path::Path) -> Result<()> {
     )
     .with_context(|| format!("failed to open database: {}", db_path.display()))?;
 
-    let mut stmt =
-        conn.prepare("SELECT key, value FROM metadata WHERE key NOT LIKE 'migration:%' ORDER BY key")?;
+    let mut stmt = conn
+        .prepare("SELECT key, value FROM metadata WHERE key NOT LIKE 'migration:%' ORDER BY key")?;
     let entries: Vec<(String, String)> = stmt
         .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
         .filter_map(|r| r.ok())

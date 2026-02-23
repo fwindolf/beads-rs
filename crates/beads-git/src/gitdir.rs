@@ -6,7 +6,7 @@
 //!
 //! Ported from Go `internal/git/gitdir.go`.
 
-use crate::commands::{git_command, GitError};
+use crate::commands::{GitError, git_command};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -99,11 +99,7 @@ pub fn get_git_user_name() -> Option<String> {
     }
 
     let name = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if name.is_empty() {
-        None
-    } else {
-        Some(name)
-    }
+    if name.is_empty() { None } else { Some(name) }
 }
 
 /// Retrieve the `user.email` from git configuration.
@@ -120,11 +116,7 @@ pub fn get_git_user_email() -> Option<String> {
     }
 
     let email = String::from_utf8_lossy(&output.stdout).trim().to_string();
-    if email.is_empty() {
-        None
-    } else {
-        Some(email)
-    }
+    if email.is_empty() { None } else { Some(email) }
 }
 
 /// Check whether the current directory is inside a git worktree (as opposed

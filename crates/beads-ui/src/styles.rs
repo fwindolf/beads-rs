@@ -337,10 +337,7 @@ mod tests {
         assert_eq!(render_status_icon(&Status::Closed), STATUS_ICON_CLOSED);
         assert_eq!(render_status_icon(&Status::Deferred), STATUS_ICON_DEFERRED);
         assert_eq!(render_status_icon(&Status::Pinned), STATUS_ICON_PINNED);
-        assert_eq!(
-            render_status_icon(&Status::Custom("unknown".into())),
-            "?"
-        );
+        assert_eq!(render_status_icon(&Status::Custom("unknown".into())), "?");
     }
 
     #[test]

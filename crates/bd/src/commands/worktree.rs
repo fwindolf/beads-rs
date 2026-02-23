@@ -7,7 +7,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::{WorktreeArgs, WorktreeCommands, WorktreeCreateArgs, WorktreeRemoveArgs};
 use crate::context::RuntimeContext;
@@ -24,10 +24,7 @@ pub fn run(ctx: &RuntimeContext, args: &WorktreeArgs) -> Result<()> {
 }
 
 fn run_create(ctx: &RuntimeContext, args: &WorktreeCreateArgs) -> Result<()> {
-    let name = args
-        .name
-        .as_deref()
-        .context("worktree name is required")?;
+    let name = args.name.as_deref().context("worktree name is required")?;
 
     let branch = args.branch.as_deref().unwrap_or(name);
 
@@ -66,8 +63,7 @@ fn run_create(ctx: &RuntimeContext, args: &WorktreeCreateArgs) -> Result<()> {
     fs::create_dir_all(&wt_beads).context("failed to create .beads in worktree")?;
 
     let redirect_path = wt_beads.join("redirect");
-    let main_beads_abs = fs::canonicalize(&main_beads)
-        .unwrap_or_else(|_| main_beads.clone());
+    let main_beads_abs = fs::canonicalize(&main_beads).unwrap_or_else(|_| main_beads.clone());
     fs::write(&redirect_path, main_beads_abs.to_string_lossy().as_bytes())
         .context("failed to write redirect file")?;
 
@@ -83,10 +79,7 @@ fn run_create(ctx: &RuntimeContext, args: &WorktreeCreateArgs) -> Result<()> {
     } else {
         println!("Created worktree: {}", wt_path.display());
         println!("  Branch: {branch}");
-        println!(
-            "  Beads: redirects to {}",
-            main_beads_abs.display()
-        );
+        println!("  Beads: redirects to {}", main_beads_abs.display());
     }
 
     Ok(())
@@ -167,10 +160,7 @@ fn run_list(ctx: &RuntimeContext) -> Result<()> {
             .collect();
         output_json(&serde_json::json!(entries));
     } else {
-        println!(
-            "{:<20} {:<50} {:<20} {}",
-            "NAME", "PATH", "BRANCH", "BEADS"
-        );
+        println!("{:<20} {:<50} {:<20} BEADS", "NAME", "PATH", "BRANCH");
         for wt in &worktrees {
             let beads_state = main_beads
                 .as_ref()
@@ -184,8 +174,7 @@ fn run_list(ctx: &RuntimeContext) -> Result<()> {
 
             let display_name = if wt.bare {
                 "(bare)".to_string()
-            } else if Some(&wt.path)
-                == repo_root.as_ref().map(|r| r.display().to_string()).as_ref()
+            } else if Some(&wt.path) == repo_root.as_ref().map(|r| r.display().to_string()).as_ref()
             {
                 "(main)".to_string()
             } else {
@@ -399,7 +388,9 @@ fn get_beads_state(wt_path: &str, main_beads: &Path) -> &'static str {
 
 fn get_redirect_target(base: &Path) -> Option<String> {
     let redirect = base.join(".beads").join("redirect");
-    fs::read_to_string(redirect).ok().map(|s| s.trim().to_string())
+    fs::read_to_string(redirect)
+        .ok()
+        .map(|s| s.trim().to_string())
 }
 
 fn add_to_gitignore(repo_root: &Path, entry: &str) {
@@ -428,10 +419,7 @@ fn remove_from_gitignore(repo_root: &Path, entry: &str) {
     };
 
     let line = format!("/{entry}");
-    let new_content: Vec<&str> = content
-        .lines()
-        .filter(|l| l.trim() != line)
-        .collect();
+    let new_content: Vec<&str> = content.lines().filter(|l| l.trim() != line).collect();
 
     let _ = fs::write(&gitignore, new_content.join("\n") + "\n");
 }

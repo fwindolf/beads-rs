@@ -1,6 +1,6 @@
 //! `bd count` -- count issues by status.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::CountArgs;
 use crate::context::RuntimeContext;

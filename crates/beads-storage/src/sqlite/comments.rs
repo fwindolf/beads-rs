@@ -1,7 +1,7 @@
 //! Comment and Event CRUD operations for [`SqliteStore`].
 
 use chrono::{DateTime, Utc};
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 
 use beads_core::comment::{Comment, Event};
 use beads_core::enums::EventType;
@@ -99,10 +99,7 @@ pub(crate) fn import_comment_on_conn(
 }
 
 /// Returns all comments for an issue on the given connection.
-pub(crate) fn get_comments_on_conn(
-    conn: &Connection,
-    issue_id: &str,
-) -> Result<Vec<Comment>> {
+pub(crate) fn get_comments_on_conn(conn: &Connection, issue_id: &str) -> Result<Vec<Comment>> {
     let mut stmt = conn.prepare(
         "SELECT id, issue_id, author, text, created_at
          FROM comments WHERE issue_id = ?1 ORDER BY created_at ASC",
@@ -130,12 +127,7 @@ pub(crate) fn get_comments_on_conn(
 
 impl SqliteStore {
     /// Adds a comment and returns it.
-    pub fn add_comment_impl(
-        &self,
-        issue_id: &str,
-        author: &str,
-        text: &str,
-    ) -> Result<Comment> {
+    pub fn add_comment_impl(&self, issue_id: &str, author: &str, text: &str) -> Result<Comment> {
         let conn = self.lock_conn()?;
         add_comment_on_conn(&conn, issue_id, author, text)
     }
@@ -207,9 +199,7 @@ mod tests {
     #[test]
     fn add_and_get_comment() {
         let store = test_store();
-        let issue = IssueBuilder::new("Issue")
-            .id("bd-cmt1")
-            .build();
+        let issue = IssueBuilder::new("Issue").id("bd-cmt1").build();
         store.create_issue_impl(&issue, "alice").unwrap();
 
         let comment = store
@@ -227,9 +217,7 @@ mod tests {
     #[test]
     fn get_events() {
         let store = test_store();
-        let issue = IssueBuilder::new("Issue")
-            .id("bd-evt1")
-            .build();
+        let issue = IssueBuilder::new("Issue").id("bd-evt1").build();
         store.create_issue_impl(&issue, "alice").unwrap();
         store
             .add_comment_impl("bd-evt1", "bob", "A comment")
@@ -243,9 +231,7 @@ mod tests {
     #[test]
     fn get_all_events_since() {
         let store = test_store();
-        let issue = IssueBuilder::new("Issue")
-            .id("bd-evt2")
-            .build();
+        let issue = IssueBuilder::new("Issue").id("bd-evt2").build();
         store.create_issue_impl(&issue, "alice").unwrap();
 
         let events = store.get_all_events_since_impl(0).unwrap();

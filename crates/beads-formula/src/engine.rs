@@ -306,20 +306,18 @@ mod tests {
             r#type: "workflow".into(),
             version: 1,
             vars: HashMap::new(),
-            steps: vec![
-                Step {
-                    id: "a".into(),
-                    title: "Design {{component}}".into(),
-                    description: "For {{owner}}".into(),
-                    r#type: "task".into(),
-                    priority: 2,
-                    needs: vec![],
-                    condition: None,
-                    gate: None,
-                    assignee: Some("{{owner}}".into()),
-                    labels: vec![],
-                },
-            ],
+            steps: vec![Step {
+                id: "a".into(),
+                title: "Design {{component}}".into(),
+                description: "For {{owner}}".into(),
+                r#type: "task".into(),
+                priority: 2,
+                needs: vec![],
+                condition: None,
+                gate: None,
+                assignee: Some("{{owner}}".into()),
+                labels: vec![],
+            }],
             source: String::new(),
         };
         let vars = extract_variables(&f);
@@ -335,13 +333,14 @@ mod tests {
             description: String::new(),
             r#type: "workflow".into(),
             version: 1,
-            vars: HashMap::from([
-                ("name".into(), VarDef {
+            vars: HashMap::from([(
+                "name".into(),
+                VarDef {
                     description: String::new(),
                     required: true,
                     default: None,
-                }),
-            ]),
+                },
+            )]),
             steps: vec![
                 Step {
                     id: "design".into(),
@@ -386,13 +385,14 @@ mod tests {
             description: String::new(),
             r#type: "workflow".into(),
             version: 1,
-            vars: HashMap::from([
-                ("type".into(), VarDef {
+            vars: HashMap::from([(
+                "type".into(),
+                VarDef {
                     description: String::new(),
                     required: true,
                     default: None,
-                }),
-            ]),
+                },
+            )]),
             steps: vec![
                 Step {
                     id: "tests".into(),
@@ -457,13 +457,14 @@ mod tests {
             description: String::new(),
             r#type: "workflow".into(),
             version: 1,
-            vars: HashMap::from([
-                ("name".into(), VarDef {
+            vars: HashMap::from([(
+                "name".into(),
+                VarDef {
                     description: String::new(),
                     required: true,
                     default: None,
-                }),
-            ]),
+                },
+            )]),
             steps: vec![],
             source: String::new(),
         };
@@ -479,27 +480,26 @@ mod tests {
             description: String::new(),
             r#type: "workflow".into(),
             version: 1,
-            vars: HashMap::from([
-                ("env".into(), VarDef {
+            vars: HashMap::from([(
+                "env".into(),
+                VarDef {
                     description: String::new(),
                     required: false,
                     default: Some("staging".into()),
-                }),
-            ]),
-            steps: vec![
-                Step {
-                    id: "deploy".into(),
-                    title: "Deploy to {{env}}".into(),
-                    description: String::new(),
-                    r#type: "task".into(),
-                    priority: 2,
-                    needs: vec![],
-                    condition: None,
-                    gate: None,
-                    assignee: None,
-                    labels: vec![],
                 },
-            ],
+            )]),
+            steps: vec![Step {
+                id: "deploy".into(),
+                title: "Deploy to {{env}}".into(),
+                description: String::new(),
+                r#type: "task".into(),
+                priority: 2,
+                needs: vec![],
+                condition: None,
+                gate: None,
+                assignee: None,
+                labels: vec![],
+            }],
             source: String::new(),
         };
 
@@ -521,24 +521,22 @@ mod tests {
             r#type: "workflow".into(),
             version: 1,
             vars: HashMap::new(),
-            steps: vec![
-                Step {
-                    id: "ci".into(),
-                    title: "Wait for CI".into(),
-                    description: String::new(),
-                    r#type: "task".into(),
-                    priority: 2,
-                    needs: vec![],
-                    condition: None,
-                    gate: Some(StepGate {
-                        r#type: "gh:run".into(),
-                        id: "ci.yml".into(),
-                        timeout: "30m".into(),
-                    }),
-                    assignee: None,
-                    labels: vec![],
-                },
-            ],
+            steps: vec![Step {
+                id: "ci".into(),
+                title: "Wait for CI".into(),
+                description: String::new(),
+                r#type: "task".into(),
+                priority: 2,
+                needs: vec![],
+                condition: None,
+                gate: Some(StepGate {
+                    r#type: "gh:run".into(),
+                    id: "ci.yml".into(),
+                    timeout: "30m".into(),
+                }),
+                assignee: None,
+                labels: vec![],
+            }],
             source: String::new(),
         };
         let cooked = cook(&f, &HashMap::new()).unwrap();

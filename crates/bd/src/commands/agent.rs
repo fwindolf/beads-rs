@@ -3,7 +3,7 @@
 //! Agents are issues labeled `gt:agent` that self-report their state.
 //! This module implements list, show, state, and run subcommands.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use crate::cli::{AgentArgs, AgentCommands};
@@ -313,7 +313,12 @@ fn cmd_run(ctx: &RuntimeContext, agent_id: &str, hook_bead: &str) -> Result<()> 
     conn.execute(
         "INSERT INTO events (issue_id, event_type, actor, new_value, comment, created_at) \
          VALUES (?1, 'agent_state', ?2, 'running', ?3, ?4)",
-        rusqlite::params![agent_id, &ctx.actor, &format!("hook={}", hook_bead), &now_str],
+        rusqlite::params![
+            agent_id,
+            &ctx.actor,
+            &format!("hook={}", hook_bead),
+            &now_str
+        ],
     )?;
 
     if ctx.json {
@@ -381,8 +386,7 @@ fn open_db(ctx: &RuntimeContext, writable: bool) -> Result<rusqlite::Connection>
     } else {
         rusqlite::Connection::open_with_flags(
             &db_path,
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
-                | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
         )
         .with_context(|| format!("failed to open database: {}", db_path.display()))
     }

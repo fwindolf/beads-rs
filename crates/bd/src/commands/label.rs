@@ -1,6 +1,6 @@
 //! `bd label` -- manage labels on an issue.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::{LabelArgs, LabelCommands};
 use crate::context::RuntimeContext;
@@ -46,12 +46,7 @@ pub fn run(ctx: &RuntimeContext, args: &LabelArgs) -> Result<()> {
                 "INSERT OR IGNORE INTO labels (issue_id, label) VALUES (?1, ?2)",
                 rusqlite::params![&args.id, &add_args.label],
             )
-            .with_context(|| {
-                format!(
-                    "failed to add label '{}' to {}",
-                    add_args.label, args.id
-                )
-            })?;
+            .with_context(|| format!("failed to add label '{}' to {}", add_args.label, args.id))?;
 
             if ctx.json {
                 output_json(&serde_json::json!({
@@ -86,10 +81,7 @@ pub fn run(ctx: &RuntimeContext, args: &LabelArgs) -> Result<()> {
                     println!("Removed label '{}' from {}", remove_args.label, args.id);
                 }
             } else {
-                eprintln!(
-                    "Label '{}' not found on {}",
-                    remove_args.label, args.id
-                );
+                eprintln!("Label '{}' not found on {}", remove_args.label, args.id);
             }
         }
 

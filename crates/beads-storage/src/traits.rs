@@ -158,13 +158,7 @@ pub trait Storage: Send + Sync {
 
     /// Closes an issue (sets status=closed, closed_at=now) and emits a
     /// "closed" event.
-    fn close_issue(
-        &self,
-        id: &str,
-        reason: &str,
-        actor: &str,
-        session: &str,
-    ) -> Result<()>;
+    fn close_issue(&self, id: &str, reason: &str, actor: &str, session: &str) -> Result<()>;
 
     /// Permanently deletes an issue and its related data.
     fn delete_issue(&self, id: &str) -> Result<()>;
@@ -178,12 +172,7 @@ pub trait Storage: Send + Sync {
     fn add_dependency(&self, dep: &Dependency, actor: &str) -> Result<()>;
 
     /// Removes a dependency edge.
-    fn remove_dependency(
-        &self,
-        issue_id: &str,
-        depends_on_id: &str,
-        actor: &str,
-    ) -> Result<()>;
+    fn remove_dependency(&self, issue_id: &str, depends_on_id: &str, actor: &str) -> Result<()>;
 
     /// Returns the issues that the given issue depends on.
     fn get_dependencies(&self, issue_id: &str) -> Result<Vec<Issue>>;
@@ -241,12 +230,7 @@ pub trait Storage: Send + Sync {
     // -- Comments and events -------------------------------------------------
 
     /// Adds a comment to an issue and returns the created comment.
-    fn add_comment(
-        &self,
-        issue_id: &str,
-        author: &str,
-        text: &str,
-    ) -> Result<Comment>;
+    fn add_comment(&self, issue_id: &str, author: &str, text: &str) -> Result<Comment>;
 
     /// Returns all comments for an issue.
     fn get_comments(&self, issue_id: &str) -> Result<Vec<Comment>>;
@@ -301,13 +285,7 @@ pub trait Transaction {
     fn create_issue(&self, issue: &Issue, actor: &str) -> Result<()>;
     fn create_issues(&self, issues: &[Issue], actor: &str) -> Result<()>;
     fn update_issue(&self, id: &str, updates: &IssueUpdates, actor: &str) -> Result<()>;
-    fn close_issue(
-        &self,
-        id: &str,
-        reason: &str,
-        actor: &str,
-        session: &str,
-    ) -> Result<()>;
+    fn close_issue(&self, id: &str, reason: &str, actor: &str, session: &str) -> Result<()>;
     fn delete_issue(&self, id: &str) -> Result<()>;
     fn get_issue(&self, id: &str) -> Result<Issue>;
     fn search_issues(&self, query: &str, filter: &IssueFilter) -> Result<Vec<Issue>>;
@@ -315,12 +293,7 @@ pub trait Transaction {
     // -- Dependency operations -----------------------------------------------
 
     fn add_dependency(&self, dep: &Dependency, actor: &str) -> Result<()>;
-    fn remove_dependency(
-        &self,
-        issue_id: &str,
-        depends_on_id: &str,
-        actor: &str,
-    ) -> Result<()>;
+    fn remove_dependency(&self, issue_id: &str, depends_on_id: &str, actor: &str) -> Result<()>;
     fn get_dependency_records(&self, issue_id: &str) -> Result<Vec<Dependency>>;
 
     // -- Label operations ----------------------------------------------------

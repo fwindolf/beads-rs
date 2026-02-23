@@ -42,13 +42,7 @@ impl Transaction for SqliteTx<'_> {
         issues::update_issue_on_conn(self.conn, id, updates, actor)
     }
 
-    fn close_issue(
-        &self,
-        id: &str,
-        reason: &str,
-        actor: &str,
-        session: &str,
-    ) -> Result<()> {
+    fn close_issue(&self, id: &str, reason: &str, actor: &str, session: &str) -> Result<()> {
         issues::close_issue_on_conn(self.conn, id, reason, actor, session)
     }
 
@@ -68,12 +62,7 @@ impl Transaction for SqliteTx<'_> {
         dependencies::add_dependency_on_conn(self.conn, dep, actor)
     }
 
-    fn remove_dependency(
-        &self,
-        issue_id: &str,
-        depends_on_id: &str,
-        actor: &str,
-    ) -> Result<()> {
+    fn remove_dependency(&self, issue_id: &str, depends_on_id: &str, actor: &str) -> Result<()> {
         dependencies::remove_dependency_on_conn(self.conn, issue_id, depends_on_id, actor)
     }
 
@@ -139,16 +128,15 @@ impl SqliteStore {
         f: &dyn Fn(&dyn Transaction) -> Result<()>,
     ) -> Result<()> {
         let conn = self.lock_conn()?;
-        let tx = conn.unchecked_transaction().map_err(|e| {
-            StorageError::Transaction(format!("failed to begin: {e}"))
-        })?;
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| StorageError::Transaction(format!("failed to begin: {e}")))?;
 
         let sqlite_tx = SqliteTx { conn: &tx };
         match f(&sqlite_tx) {
             Ok(()) => {
-                tx.commit().map_err(|e| {
-                    StorageError::Transaction(format!("failed to commit: {e}"))
-                })?;
+                tx.commit()
+                    .map_err(|e| StorageError::Transaction(format!("failed to commit: {e}")))?;
                 Ok(())
             }
             Err(e) => {
@@ -176,9 +164,7 @@ mod tests {
 
         store
             .run_in_transaction_impl(&|tx| {
-                let issue = IssueBuilder::new("In transaction")
-                    .id("bd-tx1")
-                    .build();
+                let issue = IssueBuilder::new("In transaction").id("bd-tx1").build();
                 tx.create_issue(&issue, "alice")?;
                 tx.add_label("bd-tx1", "transacted", "alice")?;
                 Ok(())
@@ -197,9 +183,7 @@ mod tests {
         let store = test_store();
 
         let result = store.run_in_transaction_impl(&|tx| {
-            let issue = IssueBuilder::new("Should rollback")
-                .id("bd-tx2")
-                .build();
+            let issue = IssueBuilder::new("Should rollback").id("bd-tx2").build();
             tx.create_issue(&issue, "alice")?;
             // Force an error.
             Err(StorageError::Internal("test rollback".into()))
@@ -218,12 +202,8 @@ mod tests {
 
         store
             .run_in_transaction_impl(&|tx| {
-                let parent = IssueBuilder::new("Parent")
-                    .id("bd-txp1")
-                    .build();
-                let child = IssueBuilder::new("Child")
-                    .id("bd-txc1")
-                    .build();
+                let parent = IssueBuilder::new("Parent").id("bd-txp1").build();
+                let child = IssueBuilder::new("Child").id("bd-txc1").build();
                 tx.create_issue(&parent, "alice")?;
                 tx.create_issue(&child, "alice")?;
 

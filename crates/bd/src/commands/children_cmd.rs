@@ -1,6 +1,6 @@
 //! `bd children` -- top-level alias for `bd dep children`.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::ChildrenArgs;
 use crate::context::RuntimeContext;

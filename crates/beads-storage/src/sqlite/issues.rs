@@ -1,13 +1,11 @@
 //! Issue CRUD operations for [`SqliteStore`].
 
 use chrono::{DateTime, Utc};
-use rusqlite::{params, Connection, Row};
+use rusqlite::{Connection, Row, params};
 
 use beads_core::content_hash::compute_content_hash;
 use beads_core::entity::{BondRef, Validation};
-use beads_core::enums::{
-    AgentState, EventType, IssueType, MolType, Status, WispType, WorkType,
-};
+use beads_core::enums::{AgentState, EventType, IssueType, MolType, Status, WispType, WorkType};
 use beads_core::filter::IssueFilter;
 use beads_core::issue::Issue;
 
@@ -149,12 +147,9 @@ pub(crate) fn scan_issue(row: &Row<'_>) -> rusqlite::Result<Issue> {
         serde_json::value::RawValue::from_string(metadata_str).ok()
     };
 
-    let bonded_from: Vec<BondRef> =
-        serde_json::from_str(&bonded_from_str).unwrap_or_default();
-    let validations: Vec<Validation> =
-        serde_json::from_str(&validations_str).unwrap_or_default();
-    let waiters: Vec<String> =
-        serde_json::from_str(&waiters_str).unwrap_or_default();
+    let bonded_from: Vec<BondRef> = serde_json::from_str(&bonded_from_str).unwrap_or_default();
+    let validations: Vec<Validation> = serde_json::from_str(&validations_str).unwrap_or_default();
+    let waiters: Vec<String> = serde_json::from_str(&waiters_str).unwrap_or_default();
 
     let timeout = if timeout_ns > 0 {
         Some(std::time::Duration::from_nanos(timeout_ns as u64))
@@ -267,16 +262,12 @@ pub(crate) fn insert_issue(conn: &Connection, issue: &Issue, actor: &str) -> Res
         .as_ref()
         .map(|m| m.get().to_string())
         .unwrap_or_else(|| "{}".to_string());
-    let bonded_from_str = serde_json::to_string(&issue.bonded_from)
-        .unwrap_or_else(|_| "[]".to_string());
-    let validations_str = serde_json::to_string(&issue.validations)
-        .unwrap_or_else(|_| "[]".to_string());
-    let waiters_str = serde_json::to_string(&issue.waiters)
-        .unwrap_or_else(|_| "[]".to_string());
-    let timeout_ns = issue
-        .timeout
-        .map(|d| d.as_nanos() as i64)
-        .unwrap_or(0);
+    let bonded_from_str =
+        serde_json::to_string(&issue.bonded_from).unwrap_or_else(|_| "[]".to_string());
+    let validations_str =
+        serde_json::to_string(&issue.validations).unwrap_or_else(|_| "[]".to_string());
+    let waiters_str = serde_json::to_string(&issue.waiters).unwrap_or_else(|_| "[]".to_string());
+    let timeout_ns = issue.timeout.map(|d| d.as_nanos() as i64).unwrap_or(0);
 
     let created_at_str = format_datetime(&issue.created_at);
     let updated_at_str = format_datetime(&issue.updated_at);
@@ -306,71 +297,81 @@ pub(crate) fn insert_issue(conn: &Connection, issue: &Issue, actor: &str) -> Res
             )"
         ),
         params![
-            issue.id,                                   // 1
-            content_hash,                               // 2
-            issue.title,                                // 3
-            issue.description,                          // 4
-            issue.design,                               // 5
-            issue.acceptance_criteria,                   // 6
-            issue.notes,                                // 7
-            issue.status.as_str(),                      // 8
-            issue.priority,                             // 9
-            issue.issue_type.as_str(),                  // 10
-            issue.assignee,                             // 11
-            issue.estimated_minutes,                    // 12
-            created_at_str,                             // 13
-            issue.created_by,                           // 14
-            issue.owner,                                // 15
-            updated_at_str,                             // 16
-            closed_at_str,                              // 17
-            issue.closed_by_session,                    // 18
-            issue.external_ref,                         // 19
-            issue.spec_id,                              // 20
-            issue.compaction_level,                     // 21
-            compacted_at_str,                           // 22
-            issue.compacted_at_commit,                  // 23
-            issue.original_size,                        // 24
-            issue.sender,                               // 25
-            issue.ephemeral as i32,                     // 26
-            issue.wisp_type.as_str(),                   // 27
-            issue.pinned as i32,                        // 28
-            issue.is_template as i32,                   // 29
-            issue.crystallizes as i32,                  // 30
-            issue.mol_type.as_str(),                    // 31
-            issue.work_type.as_str(),                   // 32
-            issue.quality_score.map(|v| v as f64),      // 33
-            issue.source_system,                        // 34
-            metadata_str,                               // 35
-            issue.source_repo,                          // 36
-            issue.close_reason,                         // 37
-            issue.event_kind,                           // 38
-            issue.actor,                                // 39
-            issue.target,                               // 40
-            issue.payload,                              // 41
-            issue.await_type,                           // 42
-            issue.await_id,                             // 43
-            timeout_ns,                                 // 44
-            waiters_str,                                // 45
-            issue.hook_bead,                            // 46
-            issue.role_bead,                            // 47
-            issue.agent_state.as_str(),                 // 48
-            last_activity_str,                          // 49
-            issue.role_type,                            // 50
-            issue.rig,                                  // 51
-            due_at_str,                                 // 52
-            defer_until_str,                            // 53
-            bonded_from_str,                            // 54
-            validations_str,                            // 55
+            issue.id,                              // 1
+            content_hash,                          // 2
+            issue.title,                           // 3
+            issue.description,                     // 4
+            issue.design,                          // 5
+            issue.acceptance_criteria,             // 6
+            issue.notes,                           // 7
+            issue.status.as_str(),                 // 8
+            issue.priority,                        // 9
+            issue.issue_type.as_str(),             // 10
+            issue.assignee,                        // 11
+            issue.estimated_minutes,               // 12
+            created_at_str,                        // 13
+            issue.created_by,                      // 14
+            issue.owner,                           // 15
+            updated_at_str,                        // 16
+            closed_at_str,                         // 17
+            issue.closed_by_session,               // 18
+            issue.external_ref,                    // 19
+            issue.spec_id,                         // 20
+            issue.compaction_level,                // 21
+            compacted_at_str,                      // 22
+            issue.compacted_at_commit,             // 23
+            issue.original_size,                   // 24
+            issue.sender,                          // 25
+            issue.ephemeral as i32,                // 26
+            issue.wisp_type.as_str(),              // 27
+            issue.pinned as i32,                   // 28
+            issue.is_template as i32,              // 29
+            issue.crystallizes as i32,             // 30
+            issue.mol_type.as_str(),               // 31
+            issue.work_type.as_str(),              // 32
+            issue.quality_score.map(|v| v as f64), // 33
+            issue.source_system,                   // 34
+            metadata_str,                          // 35
+            issue.source_repo,                     // 36
+            issue.close_reason,                    // 37
+            issue.event_kind,                      // 38
+            issue.actor,                           // 39
+            issue.target,                          // 40
+            issue.payload,                         // 41
+            issue.await_type,                      // 42
+            issue.await_id,                        // 43
+            timeout_ns,                            // 44
+            waiters_str,                           // 45
+            issue.hook_bead,                       // 46
+            issue.role_bead,                       // 47
+            issue.agent_state.as_str(),            // 48
+            last_activity_str,                     // 49
+            issue.role_type,                       // 50
+            issue.rig,                             // 51
+            due_at_str,                            // 52
+            defer_until_str,                       // 53
+            bonded_from_str,                       // 54
+            validations_str,                       // 55
         ],
     )?;
 
     // Emit "created" event.
-    emit_event(conn, &issue.id, EventType::Created, actor, None, None, None, &now_str)?;
+    emit_event(
+        conn,
+        &issue.id,
+        EventType::Created,
+        actor,
+        None,
+        None,
+        None,
+        &now_str,
+    )?;
 
     Ok(())
 }
 
 /// Emits an event row into the events table.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn emit_event(
     conn: &Connection,
     issue_id: &str,
@@ -411,15 +412,14 @@ impl SqliteStore {
     /// Creates multiple issues in a single transaction.
     pub fn create_issues_impl(&self, issues: &[Issue], actor: &str) -> Result<()> {
         let conn = self.lock_conn()?;
-        let tx = conn.unchecked_transaction().map_err(|e| {
-            StorageError::Transaction(format!("failed to begin: {e}"))
-        })?;
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| StorageError::Transaction(format!("failed to begin: {e}")))?;
         for issue in issues {
             insert_issue(&tx, issue, actor)?;
         }
-        tx.commit().map_err(|e| {
-            StorageError::Transaction(format!("failed to commit: {e}"))
-        })?;
+        tx.commit()
+            .map_err(|e| StorageError::Transaction(format!("failed to commit: {e}")))?;
         Ok(())
     }
 
@@ -449,9 +449,7 @@ impl SqliteStore {
         }
         let conn = self.lock_conn()?;
         let placeholders = ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-        let sql = format!(
-            "SELECT {ISSUE_COLUMNS} FROM issues WHERE id IN ({placeholders})"
-        );
+        let sql = format!("SELECT {ISSUE_COLUMNS} FROM issues WHERE id IN ({placeholders})");
         let mut stmt = conn.prepare(&sql)?;
         let params = rusqlite::params_from_iter(ids.iter());
         let rows = stmt.query_map(params, scan_issue)?;
@@ -463,12 +461,7 @@ impl SqliteStore {
     }
 
     /// Applies partial updates to an issue.
-    pub fn update_issue_impl(
-        &self,
-        id: &str,
-        updates: &IssueUpdates,
-        actor: &str,
-    ) -> Result<()> {
+    pub fn update_issue_impl(&self, id: &str, updates: &IssueUpdates, actor: &str) -> Result<()> {
         let conn = self.lock_conn()?;
         update_issue_on_conn(&conn, id, updates, actor)
     }
@@ -492,11 +485,7 @@ impl SqliteStore {
     }
 
     /// Searches issues by text query and filter.
-    pub fn search_issues_impl(
-        &self,
-        query: &str,
-        filter: &IssueFilter,
-    ) -> Result<Vec<Issue>> {
+    pub fn search_issues_impl(&self, query: &str, filter: &IssueFilter) -> Result<Vec<Issue>> {
         let conn = self.lock_conn()?;
         search_issues_on_conn(&conn, query, filter)
     }
@@ -599,9 +588,7 @@ pub(crate) fn update_issue_on_conn(
     }
     if let Some(ref meta) = updates.metadata {
         set_clauses.push("metadata = ?".to_string());
-        param_values.push(Box::new(
-            meta.clone().unwrap_or_else(|| "{}".to_string()),
-        ));
+        param_values.push(Box::new(meta.clone().unwrap_or_else(|| "{}".to_string())));
     }
     if let Some(ref qs) = updates.quality_score {
         set_clauses.push("quality_score = ?".to_string());
@@ -646,10 +633,7 @@ pub(crate) fn update_issue_on_conn(
     set_clauses.push("updated_at = ?".to_string());
     param_values.push(Box::new(now_str.clone()));
 
-    let sql = format!(
-        "UPDATE issues SET {} WHERE id = ?",
-        set_clauses.join(", ")
-    );
+    let sql = format!("UPDATE issues SET {} WHERE id = ?", set_clauses.join(", "));
     param_values.push(Box::new(id.to_string()));
 
     let param_refs: Vec<&dyn rusqlite::types::ToSql> =
@@ -661,7 +645,16 @@ pub(crate) fn update_issue_on_conn(
     }
 
     // Emit "updated" event.
-    emit_event(conn, id, EventType::Updated, actor, None, None, None, &now_str)?;
+    emit_event(
+        conn,
+        id,
+        EventType::Updated,
+        actor,
+        None,
+        None,
+        None,
+        &now_str,
+    )?;
 
     Ok(())
 }
@@ -965,9 +958,7 @@ mod tests {
     #[test]
     fn update_issue_partial() {
         let store = test_store();
-        let issue = IssueBuilder::new("Original title")
-            .id("bd-upd1")
-            .build();
+        let issue = IssueBuilder::new("Original title").id("bd-upd1").build();
         store.create_issue_impl(&issue, "alice").unwrap();
 
         let updates = IssueUpdates {
@@ -985,9 +976,7 @@ mod tests {
     #[test]
     fn close_issue() {
         let store = test_store();
-        let issue = IssueBuilder::new("To close")
-            .id("bd-close1")
-            .build();
+        let issue = IssueBuilder::new("To close").id("bd-close1").build();
         store.create_issue_impl(&issue, "alice").unwrap();
 
         store
@@ -1003,9 +992,7 @@ mod tests {
     #[test]
     fn delete_issue() {
         let store = test_store();
-        let issue = IssueBuilder::new("To delete")
-            .id("bd-del1")
-            .build();
+        let issue = IssueBuilder::new("To delete").id("bd-del1").build();
         store.create_issue_impl(&issue, "alice").unwrap();
 
         store.delete_issue_impl("bd-del1").unwrap();

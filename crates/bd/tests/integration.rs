@@ -30,12 +30,12 @@ fn init_project() -> TempDir {
 fn create_issue(tmp: &TempDir, title: &str, extra_args: &[&str]) -> String {
     let mut args = vec!["create", title, "--json"];
     args.extend_from_slice(extra_args);
-    let output = bd()
-        .args(&args)
-        .current_dir(tmp.path())
-        .output()
-        .unwrap();
-    assert!(output.status.success(), "create failed: {}", String::from_utf8_lossy(&output.stderr));
+    let output = bd().args(&args).current_dir(tmp.path()).output().unwrap();
+    assert!(
+        output.status.success(),
+        "create failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let json: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     json["id"].as_str().unwrap().to_string()
 }
@@ -49,7 +49,11 @@ fn flow1_full_lifecycle() {
     let tmp = init_project();
 
     // Create three issues with different types and priorities
-    let id1 = create_issue(&tmp, "Bug: login broken", &["-t", "bug", "-p", "0", "-d", "Users can't login"]);
+    let id1 = create_issue(
+        &tmp,
+        "Bug: login broken",
+        &["-t", "bug", "-p", "0", "-d", "Users can't login"],
+    );
     let id2 = create_issue(&tmp, "Feature: dark mode", &["-t", "feature", "-p", "2"]);
     let id3 = create_issue(&tmp, "Task: update docs", &["-t", "task", "-p", "3"]);
 
@@ -72,12 +76,16 @@ fn flow1_full_lifecycle() {
     // Check JSON structure on first issue.
     // Note: serde skip_serializing_if omits default values (status=open, issue_type=task),
     // so we check that key fields are present and non-null on the bug issue (P0, type=bug).
-    let bug_issue = arr.iter()
+    let bug_issue = arr
+        .iter()
         .find(|i| i["title"].as_str().map_or(false, |t| t.contains("login")))
         .expect("should find the login bug issue");
     assert!(bug_issue["id"].is_string());
     assert!(bug_issue["title"].is_string());
-    assert!(bug_issue["issue_type"].is_string(), "bug issue should have issue_type serialized");
+    assert!(
+        bug_issue["issue_type"].is_string(),
+        "bug issue should have issue_type serialized"
+    );
     assert_eq!(bug_issue["issue_type"].as_str().unwrap(), "bug");
     assert!(bug_issue["priority"].is_number());
     assert!(bug_issue["created_at"].is_string());
@@ -178,13 +186,24 @@ fn flow2_dependencies_and_ready() {
         .unwrap();
     assert!(output.status.success());
     let ready: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    let ready_ids: Vec<&str> = ready.as_array().unwrap()
+    let ready_ids: Vec<&str> = ready
+        .as_array()
+        .unwrap()
         .iter()
         .map(|i| i["id"].as_str().unwrap())
         .collect();
-    assert!(ready_ids.contains(&parent.as_str()), "parent should be ready");
-    assert!(ready_ids.contains(&unrelated.as_str()), "unrelated should be ready");
-    assert!(!ready_ids.contains(&child.as_str()), "child should NOT be ready (blocked)");
+    assert!(
+        ready_ids.contains(&parent.as_str()),
+        "parent should be ready"
+    );
+    assert!(
+        ready_ids.contains(&unrelated.as_str()),
+        "unrelated should be ready"
+    );
+    assert!(
+        !ready_ids.contains(&child.as_str()),
+        "child should NOT be ready (blocked)"
+    );
 
     // Close parent => child becomes ready
     bd().args(["close", &parent])
@@ -198,11 +217,16 @@ fn flow2_dependencies_and_ready() {
         .output()
         .unwrap();
     let ready: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    let ready_ids: Vec<&str> = ready.as_array().unwrap()
+    let ready_ids: Vec<&str> = ready
+        .as_array()
+        .unwrap()
         .iter()
         .map(|i| i["id"].as_str().unwrap())
         .collect();
-    assert!(ready_ids.contains(&child.as_str()), "child should now be ready");
+    assert!(
+        ready_ids.contains(&child.as_str()),
+        "child should now be ready"
+    );
 
     // bd dep list <child> => verify deps shown
     bd().args(["dep", "list", &child])
@@ -221,7 +245,11 @@ fn flow3_search_and_filter() {
     let tmp = init_project();
 
     create_issue(&tmp, "Bug: login page broken", &["-t", "bug", "-p", "0"]);
-    create_issue(&tmp, "Feature: dark mode toggle", &["-t", "feature", "-p", "2"]);
+    create_issue(
+        &tmp,
+        "Feature: dark mode toggle",
+        &["-t", "feature", "-p", "2"],
+    );
     create_issue(&tmp, "Bug: signup validation", &["-t", "bug", "-p", "1"]);
 
     // Search for "login"
@@ -349,13 +377,23 @@ fn flow5_comments_and_history() {
     assert!(output.status.success());
     let history: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     let events = history["events"].as_array().unwrap();
-    assert!(events.len() >= 3, "should have at least 3 events (created + 2 commented)");
+    assert!(
+        events.len() >= 3,
+        "should have at least 3 events (created + 2 commented)"
+    );
 
-    let event_types: Vec<&str> = events.iter()
+    let event_types: Vec<&str> = events
+        .iter()
         .map(|e| e["event_type"].as_str().unwrap())
         .collect();
-    assert!(event_types.contains(&"created"), "should have 'created' event");
-    assert!(event_types.contains(&"commented"), "should have 'commented' event");
+    assert!(
+        event_types.contains(&"created"),
+        "should have 'created' event"
+    );
+    assert!(
+        event_types.contains(&"commented"),
+        "should have 'commented' event"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -405,7 +443,11 @@ fn flow6_stats_and_views() {
         .unwrap();
     assert!(output.status.success());
     let orphans: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(orphans["count"].as_i64().unwrap(), 5, "all 5 should be orphans");
+    assert_eq!(
+        orphans["count"].as_i64().unwrap(),
+        5,
+        "all 5 should be orphans"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -478,15 +520,21 @@ fn flow8_templates() {
     // Create a template with variables in title and description
     let output = bd()
         .args([
-            "template", "create",
+            "template",
+            "create",
             "Setup {{project}}",
-            "--description", "Init {{project}} with {{lang}}",
+            "--description",
+            "Init {{project}} with {{lang}}",
             "--json",
         ])
         .current_dir(tmp.path())
         .output()
         .unwrap();
-    assert!(output.status.success(), "template create failed: {}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "template create failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let created: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     let tmpl_id = created["id"].as_str().unwrap().to_string();
 
@@ -507,18 +555,28 @@ fn flow8_templates() {
     let show: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     let vars = show["variables"].as_array().unwrap();
     let var_names: Vec<&str> = vars.iter().map(|v| v.as_str().unwrap()).collect();
-    assert!(var_names.contains(&"project"), "should extract 'project' variable");
-    assert!(var_names.contains(&"lang"), "should extract 'lang' variable");
+    assert!(
+        var_names.contains(&"project"),
+        "should extract 'project' variable"
+    );
+    assert!(
+        var_names.contains(&"lang"),
+        "should extract 'lang' variable"
+    );
 
     // Instantiate the template
     bd().args([
-            "template", "instantiate", &tmpl_id,
-            "--var", "project=myapp",
-            "--var", "lang=Rust",
-        ])
-        .current_dir(tmp.path())
-        .assert()
-        .success();
+        "template",
+        "instantiate",
+        &tmpl_id,
+        "--var",
+        "project=myapp",
+        "--var",
+        "lang=Rust",
+    ])
+    .current_dir(tmp.path())
+    .assert()
+    .success();
 
     // Verify cloned issue exists with substituted title
     let output = bd()
@@ -527,11 +585,17 @@ fn flow8_templates() {
         .output()
         .unwrap();
     let list: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    let titles: Vec<&str> = list.as_array().unwrap()
+    let titles: Vec<&str> = list
+        .as_array()
+        .unwrap()
         .iter()
         .map(|i| i["title"].as_str().unwrap())
         .collect();
-    assert!(titles.contains(&"Setup myapp"), "should have substituted title 'Setup myapp', got: {:?}", titles);
+    assert!(
+        titles.contains(&"Setup myapp"),
+        "should have substituted title 'Setup myapp', got: {:?}",
+        titles
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -544,11 +608,22 @@ fn flow9_gates() {
 
     // Create a gate
     let output = bd()
-        .args(["gate", "create", "Manual gate", "--await-type", "human", "--json"])
+        .args([
+            "gate",
+            "create",
+            "Manual gate",
+            "--await-type",
+            "human",
+            "--json",
+        ])
         .current_dir(tmp.path())
         .output()
         .unwrap();
-    assert!(output.status.success(), "gate create failed: {}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "gate create failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let created: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
     let gate_id = created["id"].as_str().unwrap().to_string();
 
@@ -583,7 +658,11 @@ fn flow9_gates() {
         .unwrap();
     assert!(output.status.success());
     let gates: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(gates.as_array().unwrap().len(), 0, "no open gates after close");
+    assert_eq!(
+        gates.as_array().unwrap().len(),
+        0,
+        "no open gates after close"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -636,19 +715,40 @@ fn flow11_json_contract() {
 
     // bd create --json returns a single object (not array)
     let output = bd()
-        .args(["create", "JSON contract test", "-t", "bug", "-p", "1", "--json"])
+        .args([
+            "create",
+            "JSON contract test",
+            "-t",
+            "bug",
+            "-p",
+            "1",
+            "--json",
+        ])
         .current_dir(tmp.path())
         .output()
         .unwrap();
     assert!(output.status.success());
     let created: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert!(created.is_object(), "create --json should return a single object, got: {}", created);
+    assert!(
+        created.is_object(),
+        "create --json should return a single object, got: {}",
+        created
+    );
     let id = created["id"].as_str().unwrap().to_string();
 
     // Verify field names on create output
-    assert!(created.get("issue_type").is_some(), "should have 'issue_type' field");
-    assert!(created.get("created_at").is_some(), "should have 'created_at' field");
-    assert!(created.get("updated_at").is_some(), "should have 'updated_at' field");
+    assert!(
+        created.get("issue_type").is_some(),
+        "should have 'issue_type' field"
+    );
+    assert!(
+        created.get("created_at").is_some(),
+        "should have 'created_at' field"
+    );
+    assert!(
+        created.get("updated_at").is_some(),
+        "should have 'updated_at' field"
+    );
 
     // bd list --json returns array
     let output = bd()
@@ -661,8 +761,14 @@ fn flow11_json_contract() {
 
     // Check field names on list output
     let first = &list.as_array().unwrap()[0];
-    assert!(first.get("issue_type").is_some(), "list items should have 'issue_type'");
-    assert!(first.get("created_at").is_some(), "list items should have 'created_at'");
+    assert!(
+        first.get("issue_type").is_some(),
+        "list items should have 'issue_type'"
+    );
+    assert!(
+        first.get("created_at").is_some(),
+        "list items should have 'created_at'"
+    );
 
     // bd show --json returns array
     let output = bd()
@@ -685,8 +791,14 @@ fn flow11_json_contract() {
 
     // Verify JSON does NOT use wrong field names
     let item = &closed.as_array().unwrap()[0];
-    assert!(item.get("type").is_none(), "should NOT have bare 'type' field (use 'issue_type')");
-    assert!(item.get("created").is_none(), "should NOT have bare 'created' field (use 'created_at')");
+    assert!(
+        item.get("type").is_none(),
+        "should NOT have bare 'type' field (use 'issue_type')"
+    );
+    assert!(
+        item.get("created").is_none(),
+        "should NOT have bare 'created' field (use 'created_at')"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -730,22 +842,40 @@ fn flow12_swarm_analysis() {
         .current_dir(tmp.path())
         .output()
         .unwrap();
-    assert!(output.status.success(), "swarm validate failed: {}", String::from_utf8_lossy(&output.stderr));
+    assert!(
+        output.status.success(),
+        "swarm validate failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
     let analysis: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
 
     assert_eq!(analysis["total_issues"].as_i64().unwrap(), 3);
-    assert!(analysis["swarmable"].as_bool().unwrap(), "should be swarmable (no cycles)");
+    assert!(
+        analysis["swarmable"].as_bool().unwrap(),
+        "should be swarmable (no cycles)"
+    );
 
     let waves = analysis["waves"].as_array().unwrap();
-    assert!(waves.len() >= 2, "should have at least 2 waves with the dependency chain");
+    assert!(
+        waves.len() >= 2,
+        "should have at least 2 waves with the dependency chain"
+    );
 
     // Wave 0 should contain child1 (no blocking deps within children)
-    let wave0_ids: Vec<&str> = waves[0]["issues"].as_array().unwrap()
+    let wave0_ids: Vec<&str> = waves[0]["issues"]
+        .as_array()
+        .unwrap()
         .iter()
         .map(|i| i["id"].as_str().unwrap())
         .collect();
-    assert!(wave0_ids.contains(&child1.as_str()), "wave 0 should contain child1 (foundation)");
-    assert!(!wave0_ids.contains(&child3.as_str()), "wave 0 should NOT contain child3 (blocked)");
+    assert!(
+        wave0_ids.contains(&child1.as_str()),
+        "wave 0 should contain child1 (foundation)"
+    );
+    assert!(
+        !wave0_ids.contains(&child3.as_str()),
+        "wave 0 should NOT contain child3 (blocked)"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -847,9 +977,7 @@ fn delete_issue() {
 
 #[test]
 fn version_command() {
-    bd().args(["version"])
-        .assert()
-        .success();
+    bd().args(["version"]).assert().success();
 }
 
 #[test]
@@ -907,7 +1035,15 @@ fn create_with_labels() {
     let tmp = init_project();
 
     let output = bd()
-        .args(["create", "Labeled issue", "-l", "frontend", "-l", "urgent", "--json"])
+        .args([
+            "create",
+            "Labeled issue",
+            "-l",
+            "frontend",
+            "-l",
+            "urgent",
+            "--json",
+        ])
         .current_dir(tmp.path())
         .output()
         .unwrap();
@@ -922,7 +1058,9 @@ fn create_with_labels() {
         .output()
         .unwrap();
     let show: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    let labels: Vec<&str> = show[0]["labels"].as_array().unwrap()
+    let labels: Vec<&str> = show[0]["labels"]
+        .as_array()
+        .unwrap()
         .iter()
         .map(|l| l.as_str().unwrap())
         .collect();
@@ -953,14 +1091,18 @@ fn update_multiple_fields() {
     let id = create_issue(&tmp, "Multi update test", &["-t", "task", "-p", "3"]);
 
     bd().args([
-        "update", &id,
-        "--title", "Updated title",
-        "--priority", "1",
-        "--type", "bug",
+        "update",
+        &id,
+        "--title",
+        "Updated title",
+        "--priority",
+        "1",
+        "--type",
+        "bug",
     ])
-        .current_dir(tmp.path())
-        .assert()
-        .success();
+    .current_dir(tmp.path())
+    .assert()
+    .success();
 
     let output = bd()
         .args(["show", &id, "--json"])
@@ -979,8 +1121,7 @@ fn update_multiple_fields() {
 
 #[test]
 fn quickstart_displays_guide() {
-    bd()
-        .args(["quickstart"])
+    bd().args(["quickstart"])
         .assert()
         .success()
         .stdout(predicate::str::contains("Dependency-Aware Issue Tracker"))
@@ -993,8 +1134,7 @@ fn quickstart_displays_guide() {
 
 #[test]
 fn onboard_displays_agents_snippet() {
-    bd()
-        .args(["onboard"])
+    bd().args(["onboard"])
         .assert()
         .success()
         .stdout(predicate::str::contains("bd Onboarding"))
@@ -1006,8 +1146,7 @@ fn onboard_displays_agents_snippet() {
 
 #[test]
 fn bootstrap_explains_sqlite_workflow() {
-    bd()
-        .args(["bootstrap"])
+    bd().args(["bootstrap"])
         .assert()
         .success()
         .stdout(predicate::str::contains("bootstrap"))
@@ -1017,8 +1156,7 @@ fn bootstrap_explains_sqlite_workflow() {
 
 #[test]
 fn preflight_shows_checklist() {
-    bd()
-        .args(["preflight"])
+    bd().args(["preflight"])
         .assert()
         .success()
         .stdout(predicate::str::contains("PR Readiness Checklist"))
@@ -1029,8 +1167,7 @@ fn preflight_shows_checklist() {
 #[test]
 fn prime_outputs_workflow_context() {
     let tmp = init_project();
-    bd()
-        .args(["prime", "--full"])
+    bd().args(["prime", "--full"])
         .current_dir(tmp.path())
         .assert()
         .success()
@@ -1043,8 +1180,7 @@ fn prime_outputs_workflow_context() {
 #[test]
 fn prime_mcp_mode_minimal() {
     let tmp = init_project();
-    bd()
-        .args(["prime", "--mcp"])
+    bd().args(["prime", "--mcp"])
         .current_dir(tmp.path())
         .assert()
         .success()
@@ -1055,8 +1191,7 @@ fn prime_mcp_mode_minimal() {
 #[test]
 fn prime_stealth_mode_no_git() {
     let tmp = init_project();
-    bd()
-        .args(["prime", "--full", "--stealth"])
+    bd().args(["prime", "--full", "--stealth"])
         .current_dir(tmp.path())
         .assert()
         .success()
@@ -1066,8 +1201,7 @@ fn prime_stealth_mode_no_git() {
 #[test]
 fn prime_silent_outside_beads_project() {
     let tmp = TempDir::new().unwrap();
-    bd()
-        .args(["prime"])
+    bd().args(["prime"])
         .current_dir(tmp.path())
         .assert()
         .success()
@@ -1077,8 +1211,7 @@ fn prime_silent_outside_beads_project() {
 #[test]
 fn upgrade_status_no_beads() {
     // Outside a beads project, should still work
-    bd()
-        .args(["upgrade", "status"])
+    bd().args(["upgrade", "status"])
         .assert()
         .success()
         .stdout(predicate::str::contains("bd version"));
@@ -1086,8 +1219,7 @@ fn upgrade_status_no_beads() {
 
 #[test]
 fn upgrade_status_json() {
-    bd()
-        .args(["upgrade", "status", "--json"])
+    bd().args(["upgrade", "status", "--json"])
         .assert()
         .success()
         .stdout(predicate::str::contains("current_version"));
@@ -1096,8 +1228,7 @@ fn upgrade_status_json() {
 #[test]
 fn upgrade_ack_in_project() {
     let tmp = init_project();
-    bd()
-        .args(["upgrade", "ack"])
+    bd().args(["upgrade", "ack"])
         .current_dir(tmp.path())
         .assert()
         .success();
@@ -1114,8 +1245,7 @@ fn worktree_info_shows_current() {
         .output()
         .unwrap();
 
-    bd()
-        .args(["worktree", "info"])
+    bd().args(["worktree", "info"])
         .current_dir(tmp.path())
         .assert()
         .success()
@@ -1146,8 +1276,7 @@ fn worktree_list_in_git_repo() {
         .output()
         .unwrap();
 
-    bd()
-        .args(["worktree", "list"])
+    bd().args(["worktree", "list"])
         .current_dir(tmp.path())
         .assert()
         .success()

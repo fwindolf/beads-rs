@@ -101,9 +101,7 @@ fn run_health(ctx: &RuntimeContext) -> Result<()> {
     };
 
     // 4. Check integrity
-    match conn.query_row("PRAGMA integrity_check", [], |row| {
-        row.get::<_, String>(0)
-    }) {
+    match conn.query_row("PRAGMA integrity_check", [], |row| row.get::<_, String>(0)) {
         Ok(result) if result == "ok" => {
             println!("[OK] SQLite integrity check passed");
         }

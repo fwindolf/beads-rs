@@ -7,7 +7,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use beads_core::enums::IssueType;
@@ -112,14 +112,14 @@ fn cmd_show(ctx: &RuntimeContext, id: &str) -> Result<()> {
     if ctx.json {
         let mut val = serde_json::to_value(&row)?;
         if let Some(obj) = val.as_object_mut() {
-            obj.insert(
-                "variables".to_string(),
-                serde_json::to_value(&variables)?,
-            );
+            obj.insert("variables".to_string(), serde_json::to_value(&variables)?);
         }
         output_json(&val);
     } else {
-        println!("{} [P{}] [{}] {}", row.id, row.priority, row.issue_type, row.title);
+        println!(
+            "{} [P{}] [{}] {}",
+            row.id, row.priority, row.issue_type, row.title
+        );
         println!("Status: {}", row.status);
         if !row.assignee.is_empty() {
             println!("Assignee: {}", row.assignee);
@@ -290,10 +290,7 @@ fn cmd_delete(ctx: &RuntimeContext, id: &str) -> Result<()> {
         "DELETE FROM events WHERE issue_id = ?1",
         rusqlite::params![id],
     )?;
-    conn.execute(
-        "DELETE FROM issues WHERE id = ?1",
-        rusqlite::params![id],
-    )?;
+    conn.execute("DELETE FROM issues WHERE id = ?1", rusqlite::params![id])?;
 
     if ctx.json {
         output_json(&serde_json::json!({ "deleted": id }));
@@ -426,7 +423,10 @@ fn cmd_instantiate(ctx: &RuntimeContext, args: &crate::cli::TemplateInstantiateA
         }
 
         if new_id.is_empty() {
-            bail!("failed to generate unique ID for cloned issue (template: {})", old_id);
+            bail!(
+                "failed to generate unique ID for cloned issue (template: {})",
+                old_id
+            );
         }
 
         id_map.insert(old_id.clone(), new_id.clone());
@@ -492,9 +492,7 @@ fn cmd_instantiate(ctx: &RuntimeContext, args: &crate::cli::TemplateInstantiateA
     // 10. Copy labels for each cloned issue
     for old_id in &all_ids {
         if let Some(new_id) = id_map.get(old_id) {
-            let mut label_stmt = conn.prepare(
-                "SELECT label FROM labels WHERE issue_id = ?1",
-            )?;
+            let mut label_stmt = conn.prepare("SELECT label FROM labels WHERE issue_id = ?1")?;
             let labels: Vec<String> = label_stmt
                 .query_map(rusqlite::params![old_id], |row| row.get(0))?
                 .filter_map(|r| r.ok())
@@ -732,8 +730,7 @@ fn open_db(ctx: &RuntimeContext, writable: bool) -> Result<rusqlite::Connection>
     } else {
         rusqlite::Connection::open_with_flags(
             &db_path,
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
-                | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
         )
         .with_context(|| format!("failed to open database: {}", db_path.display()))
     }

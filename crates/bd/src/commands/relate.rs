@@ -1,6 +1,6 @@
 //! `bd relate` / `bd unrelate` -- add/remove "related" dependencies.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use crate::cli::{RelateArgs, UnrelateArgs};
@@ -137,10 +137,7 @@ pub fn run_unrelate(ctx: &RuntimeContext, args: &UnrelateArgs) -> Result<()> {
             println!("Removed related dependency: {} <-> {}", args.from, args.to);
         }
     } else {
-        eprintln!(
-            "No related dependency found: {} <-> {}",
-            args.from, args.to
-        );
+        eprintln!("No related dependency found: {} <-> {}", args.from, args.to);
     }
 
     Ok(())

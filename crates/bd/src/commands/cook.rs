@@ -6,7 +6,7 @@
 
 use std::collections::HashMap;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use beads_core::enums::IssueType;
@@ -28,17 +28,14 @@ pub fn run(ctx: &RuntimeContext, args: &CookArgs) -> Result<()> {
 
     // 1. Find and load the formula
     let cwd = std::env::current_dir()?;
-    let path = parser::find_formula(formula_name, &cwd)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
-    let formula = parser::load_formula(&path)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let path = parser::find_formula(formula_name, &cwd).map_err(|e| anyhow::anyhow!("{}", e))?;
+    let formula = parser::load_formula(&path).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     // 2. Parse --var flags into HashMap
     let vars = parse_var_flags(&args.vars)?;
 
     // 3. Cook the formula
-    let cooked = engine::cook(&formula, &vars)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+    let cooked = engine::cook(&formula, &vars).map_err(|e| anyhow::anyhow!("{}", e))?;
 
     if cooked.is_empty() {
         println!("No steps to create (all filtered by conditions).");
@@ -96,8 +93,7 @@ fn print_cooked(ctx: &RuntimeContext, formula_name: &str, steps: &[CookedStep]) 
         };
         println!(
             "  {} [P{}] [{}] {}{}{}{}",
-            step.id, step.priority, step.issue_type, step.title,
-            deps, gate_info, assignee_info,
+            step.id, step.priority, step.issue_type, step.title, deps, gate_info, assignee_info,
         );
     }
     Ok(())
@@ -277,7 +273,9 @@ pub(crate) fn create_issues(
         let mode = if ephemeral { "wisp" } else { "pour" };
         println!(
             "Cooked formula '{}' ({} mode) -> {} issues:",
-            formula_name, mode, created.len()
+            formula_name,
+            mode,
+            created.len()
         );
         for entry in &created {
             println!(

@@ -2,7 +2,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use beads_core::enums::DependencyType;
@@ -304,11 +304,7 @@ pub fn run(ctx: &RuntimeContext, args: &DepArgs) -> Result<()> {
 }
 
 /// Run `dep parents <id>` -- show parent issues.
-pub fn run_parents(
-    ctx: &RuntimeContext,
-    db_path: &std::path::Path,
-    issue_id: &str,
-) -> Result<()> {
+pub fn run_parents(ctx: &RuntimeContext, db_path: &std::path::Path, issue_id: &str) -> Result<()> {
     let conn = rusqlite::Connection::open_with_flags(
         db_path,
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
@@ -370,11 +366,7 @@ pub fn run_parents(
 }
 
 /// Run `dep children <id>` -- show child issues.
-pub fn run_children(
-    ctx: &RuntimeContext,
-    db_path: &std::path::Path,
-    issue_id: &str,
-) -> Result<()> {
+pub fn run_children(ctx: &RuntimeContext, db_path: &std::path::Path, issue_id: &str) -> Result<()> {
     let conn = rusqlite::Connection::open_with_flags(
         db_path,
         rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,

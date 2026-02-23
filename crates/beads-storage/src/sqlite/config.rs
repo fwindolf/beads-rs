@@ -1,6 +1,6 @@
 //! Config and metadata key-value store operations for [`SqliteStore`].
 
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 use std::collections::HashMap;
 
 use crate::error::{Result, StorageError};

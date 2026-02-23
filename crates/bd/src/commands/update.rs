@@ -1,6 +1,6 @@
 //! `bd update` -- update issue fields.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::Utc;
 
 use beads_core::enums::{IssueType, Status};
@@ -95,7 +95,9 @@ pub fn run(ctx: &RuntimeContext, args: &UpdateArgs) -> Result<()> {
     }
 
     if updates.is_empty() && args.add_labels.is_empty() && args.remove_labels.is_empty() {
-        bail!("no fields to update. Specify at least one field flag (--title, --description, --type, --priority, --assignee, --status, --add-label, --remove-label)");
+        bail!(
+            "no fields to update. Specify at least one field flag (--title, --description, --type, --priority, --assignee, --status, --add-label, --remove-label)"
+        );
     }
 
     // Always update updated_at

@@ -46,7 +46,9 @@ pub fn run(_ctx: &RuntimeContext) -> Result<()> {
     println!();
     println!(
         "{}",
-        render_pass("This keeps AGENTS.md lean while bd prime provides up-to-date workflow details.")
+        render_pass(
+            "This keeps AGENTS.md lean while bd prime provides up-to-date workflow details."
+        )
     );
     println!();
 

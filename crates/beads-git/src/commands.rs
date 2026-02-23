@@ -61,10 +61,7 @@ pub type Result<T> = std::result::Result<T, GitError>;
 /// println!("Current branch: {branch}");
 /// ```
 pub fn git_command(args: &[&str], cwd: &Path) -> Result<String> {
-    let output = Command::new("git")
-        .args(args)
-        .current_dir(cwd)
-        .output()?;
+    let output = Command::new("git").args(args).current_dir(cwd).output()?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();

@@ -1,13 +1,13 @@
 //! Label CRUD operations for [`SqliteStore`].
 
 use chrono::Utc;
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 
 use beads_core::enums::EventType;
 use beads_core::issue::Issue;
 
 use crate::error::{Result, StorageError};
-use crate::sqlite::issues::{emit_event, format_datetime, scan_issue, ISSUE_COLUMNS, ISSUE_COLUMNS_PREFIXED};
+use crate::sqlite::issues::{ISSUE_COLUMNS_PREFIXED, emit_event, format_datetime, scan_issue};
 use crate::sqlite::store::SqliteStore;
 
 // ---------------------------------------------------------------------------
@@ -77,12 +77,8 @@ pub(crate) fn remove_label_on_conn(
     Ok(())
 }
 
-pub(crate) fn get_labels_on_conn(
-    conn: &Connection,
-    issue_id: &str,
-) -> Result<Vec<String>> {
-    let mut stmt =
-        conn.prepare("SELECT label FROM labels WHERE issue_id = ?1 ORDER BY label")?;
+pub(crate) fn get_labels_on_conn(conn: &Connection, issue_id: &str) -> Result<Vec<String>> {
+    let mut stmt = conn.prepare("SELECT label FROM labels WHERE issue_id = ?1 ORDER BY label")?;
     let rows = stmt.query_map(params![issue_id], |row| row.get::<_, String>(0))?;
     let mut labels = Vec::new();
     for row in rows {
@@ -103,12 +99,7 @@ impl SqliteStore {
     }
 
     /// Removes a label from an issue.
-    pub fn remove_label_impl(
-        &self,
-        issue_id: &str,
-        label: &str,
-        actor: &str,
-    ) -> Result<()> {
+    pub fn remove_label_impl(&self, issue_id: &str, label: &str, actor: &str) -> Result<()> {
         let conn = self.lock_conn()?;
         remove_label_on_conn(&conn, issue_id, label, actor)
     }
@@ -150,9 +141,7 @@ mod tests {
     #[test]
     fn add_and_get_labels() {
         let store = test_store();
-        let issue = IssueBuilder::new("Labeled issue")
-            .id("bd-lbl1")
-            .build();
+        let issue = IssueBuilder::new("Labeled issue").id("bd-lbl1").build();
         store.create_issue_impl(&issue, "alice").unwrap();
 
         store.add_label_impl("bd-lbl1", "bug", "alice").unwrap();
@@ -167,12 +156,14 @@ mod tests {
     #[test]
     fn remove_label() {
         let store = test_store();
-        let issue = IssueBuilder::new("Issue")
-            .id("bd-lbl2")
-            .build();
+        let issue = IssueBuilder::new("Issue").id("bd-lbl2").build();
         store.create_issue_impl(&issue, "alice").unwrap();
-        store.add_label_impl("bd-lbl2", "tech-debt", "alice").unwrap();
-        store.remove_label_impl("bd-lbl2", "tech-debt", "alice").unwrap();
+        store
+            .add_label_impl("bd-lbl2", "tech-debt", "alice")
+            .unwrap();
+        store
+            .remove_label_impl("bd-lbl2", "tech-debt", "alice")
+            .unwrap();
 
         let labels = store.get_labels_impl("bd-lbl2").unwrap();
         assert!(labels.is_empty());

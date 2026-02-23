@@ -7,7 +7,7 @@
 //! - `gh:run`: auto-close when a GitHub Actions run succeeds
 //! - `gh:pr`: auto-close when a GitHub PR is merged
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::{DateTime, Utc};
 
 use beads_core::idgen;
@@ -57,7 +57,7 @@ fn cmd_list(ctx: &RuntimeContext) -> Result<()> {
         .collect();
 
     if ctx.json {
-        let json_gates: Vec<serde_json::Value> = gates.iter().map(|g| gate_to_json(g)).collect();
+        let json_gates: Vec<serde_json::Value> = gates.iter().map(gate_to_json).collect();
         output_json(&json_gates);
     } else if gates.is_empty() {
         println!("No open gates found.");
@@ -97,7 +97,14 @@ fn cmd_show(ctx: &RuntimeContext, id: &str) -> Result<()> {
     } else {
         println!("{}: {}", gate.id, gate.title);
         println!("Status: {}", gate.status);
-        println!("Await type: {}", if gate.await_type.is_empty() { "none" } else { &gate.await_type });
+        println!(
+            "Await type: {}",
+            if gate.await_type.is_empty() {
+                "none"
+            } else {
+                &gate.await_type
+            }
+        );
         if !gate.await_id.is_empty() {
             println!("Await ID: {}", gate.await_id);
         }
@@ -496,10 +503,7 @@ fn check_gh_pr_gate(gate: &GateRow) -> GateResult {
                     let state = val["state"].as_str().unwrap_or("");
                     let merged = val["merged"].as_bool().unwrap_or(false);
                     if state == "MERGED" || merged {
-                        GateResult::Resolved(format!(
-                            "GitHub PR {} merged",
-                            gate.await_id
-                        ))
+                        GateResult::Resolved(format!("GitHub PR {} merged", gate.await_id))
                     } else if state == "CLOSED" {
                         GateResult::Error(format!(
                             "PR {} was closed without merging",
@@ -598,11 +602,15 @@ fn parse_duration_to_ns(s: &str) -> Result<i64> {
             current_num.clear();
 
             let multiplier: i64 = match ch {
-                's' => 1_000_000_000,                     // seconds
-                'm' => 60 * 1_000_000_000,                // minutes
-                'h' => 60 * 60 * 1_000_000_000,           // hours
-                'd' => 24 * 60 * 60 * 1_000_000_000,      // days
-                _ => bail!("invalid duration unit '{}' in '{}' (valid: s, m, h, d)", ch, s),
+                's' => 1_000_000_000,                // seconds
+                'm' => 60 * 1_000_000_000,           // minutes
+                'h' => 60 * 60 * 1_000_000_000,      // hours
+                'd' => 24 * 60 * 60 * 1_000_000_000, // days
+                _ => bail!(
+                    "invalid duration unit '{}' in '{}' (valid: s, m, h, d)",
+                    ch,
+                    s
+                ),
             };
 
             total_ns += num * multiplier;
@@ -686,8 +694,7 @@ fn open_db(ctx: &RuntimeContext, writable: bool) -> Result<rusqlite::Connection>
     } else {
         rusqlite::Connection::open_with_flags(
             &db_path,
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
-                | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
+            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY | rusqlite::OpenFlags::SQLITE_OPEN_NO_MUTEX,
         )
         .with_context(|| format!("failed to open database: {}", db_path.display()))
     }

@@ -1,6 +1,6 @@
 //! `bd comment` and `bd comments` -- add and list comments on issues.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::{DateTime, Utc};
 
 use crate::cli::{CommentArgs, CommentsArgs};

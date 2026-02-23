@@ -18,7 +18,7 @@ fn is_zero_priority(_p: &i32) -> bool {
 }
 
 /// Helper for `skip_serializing_if` on `Vec` fields.
-fn is_empty_vec<T>(v: &Vec<T>) -> bool {
+fn is_empty_vec<T>(v: &[T]) -> bool {
     v.is_empty()
 }
 
@@ -396,9 +396,12 @@ pub struct IssueBuilder {
 impl IssueBuilder {
     /// Creates a new builder with the given title.
     pub fn new(title: impl Into<String>) -> Self {
-        let mut issue = Issue::default();
-        issue.title = title.into();
-        Self { issue }
+        Self {
+            issue: Issue {
+                title: title.into(),
+                ..Issue::default()
+            },
+        }
     }
 
     pub fn id(mut self, id: impl Into<String>) -> Self {

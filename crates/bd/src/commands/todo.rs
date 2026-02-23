@@ -1,6 +1,6 @@
 //! `bd todo` -- show open issues sorted by priority.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::{DateTime, Utc};
 
 use beads_core::enums::{IssueType, Status};
@@ -87,7 +87,7 @@ pub fn run(ctx: &RuntimeContext, args: &TodoArgs) -> Result<()> {
         output_json(&issues);
     } else {
         let headers = &["ID", "PRI", "TYPE", "STATUS", "TITLE", "ASSIGNEE"];
-        let rows: Vec<Vec<String>> = issues.iter().map(|i| format_issue_row(i)).collect();
+        let rows: Vec<Vec<String>> = issues.iter().map(format_issue_row).collect();
         output_table(headers, &rows);
     }
 

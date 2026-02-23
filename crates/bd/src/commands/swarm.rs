@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use serde::Serialize;
 
 use crate::cli::{SwarmArgs, SwarmCommands};
@@ -152,11 +152,16 @@ fn cmd_validate(ctx: &RuntimeContext, epic_id: &str) -> Result<()> {
         "  Max parallelism: {}{}",
         analysis.max_parallelism,
         if !analysis.waves.is_empty() {
-            format!(" (wave {})", analysis.waves.iter()
-                .enumerate()
-                .max_by_key(|(_, w)| w.issues.len())
-                .map(|(i, _)| i)
-                .unwrap_or(0))
+            format!(
+                " (wave {})",
+                analysis
+                    .waves
+                    .iter()
+                    .enumerate()
+                    .max_by_key(|(_, w)| w.issues.len())
+                    .map(|(i, _)| i)
+                    .unwrap_or(0)
+            )
         } else {
             String::new()
         }
@@ -364,7 +369,10 @@ fn analyze_epic(
     }
     for (from, to) in blocking_deps {
         // from blocks to => to depends on from
-        depends_on.entry(to.as_str()).or_default().push(from.as_str());
+        depends_on
+            .entry(to.as_str())
+            .or_default()
+            .push(from.as_str());
         depended_on_by
             .entry(from.as_str())
             .or_default()
@@ -383,10 +391,10 @@ fn analyze_epic(
     // Structural warnings
     for c in children {
         let lower = c.title.to_lowercase();
-        let has_deps = !depends_on.get(c.id.as_str()).map_or(true, |d| d.is_empty());
+        let has_deps = !depends_on.get(c.id.as_str()).is_none_or(|d| d.is_empty());
         let has_dependents = !depended_on_by
             .get(c.id.as_str())
-            .map_or(true, |d| d.is_empty());
+            .is_none_or(|d| d.is_empty());
 
         if !has_dependents
             && (lower.contains("foundation")
@@ -400,9 +408,7 @@ fn analyze_epic(
             ));
         }
         if !has_deps
-            && (lower.contains("integration")
-                || lower.contains("final")
-                || lower.contains("test"))
+            && (lower.contains("integration") || lower.contains("final") || lower.contains("test"))
         {
             warnings.push(format!(
                 "{} ({}) has no dependencies -- should it depend on implementation?",
@@ -471,10 +477,7 @@ fn analyze_epic(
 ///
 /// Returns a `Vec<Vec<String>>` where each inner vec is one wave of issue IDs
 /// that can be worked on in parallel.
-fn compute_waves(
-    child_ids: &[String],
-    blocking_deps: &[(String, String)],
-) -> Vec<Vec<String>> {
+fn compute_waves(child_ids: &[String], blocking_deps: &[(String, String)]) -> Vec<Vec<String>> {
     // Build in-degree map
     let mut in_degree: HashMap<String, usize> = HashMap::new();
     let mut adj: HashMap<String, Vec<String>> = HashMap::new();
@@ -533,10 +536,7 @@ fn compute_waves(
 }
 
 /// Detect cycles using DFS with an explicit stack. Returns true if a cycle exists.
-fn detect_cycle(
-    child_ids: &[String],
-    depends_on: &HashMap<&str, Vec<&str>>,
-) -> bool {
+fn detect_cycle(child_ids: &[String], depends_on: &HashMap<&str, Vec<&str>>) -> bool {
     // Use color-based DFS: White=unvisited, Gray=in-progress, Black=done
     let mut color: HashMap<&str, u8> = HashMap::new(); // 0=white, 1=gray, 2=black
 
@@ -609,10 +609,7 @@ fn open_db(ctx: &RuntimeContext) -> Result<rusqlite::Connection> {
 }
 
 /// Load basic issue info (id, title, issue_type) by ID.
-fn load_issue_basic(
-    conn: &rusqlite::Connection,
-    id: &str,
-) -> Result<(String, String, String)> {
+fn load_issue_basic(conn: &rusqlite::Connection, id: &str) -> Result<(String, String, String)> {
     conn.query_row(
         "SELECT id, title, issue_type FROM issues WHERE id = ?1",
         rusqlite::params![id],
@@ -622,10 +619,7 @@ fn load_issue_basic(
 }
 
 /// Load all child issues of an epic (via parent-child dependencies).
-fn load_epic_children(
-    conn: &rusqlite::Connection,
-    epic_id: &str,
-) -> Result<Vec<ChildIssue>> {
+fn load_epic_children(conn: &rusqlite::Connection, epic_id: &str) -> Result<Vec<ChildIssue>> {
     let mut stmt = conn.prepare(
         "SELECT i.id, i.title, i.priority, i.status \
          FROM issues i \
@@ -663,9 +657,8 @@ fn load_blocking_deps(
     let mut deps = Vec::new();
 
     for child in children {
-        let mut stmt = conn.prepare(
-            "SELECT depends_on_id, type FROM dependencies WHERE issue_id = ?1",
-        )?;
+        let mut stmt =
+            conn.prepare("SELECT depends_on_id, type FROM dependencies WHERE issue_id = ?1")?;
 
         let rows: Vec<(String, String)> = stmt
             .query_map(rusqlite::params![&child.id], |row| {

@@ -1,6 +1,6 @@
 //! `bd ready` -- show ready work items (open, no active blockers).
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use chrono::{DateTime, Utc};
 
 use beads_core::enums::{IssueType, Status};

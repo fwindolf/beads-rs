@@ -1,6 +1,6 @@
 //! `bd orphans` -- show issues with no dependencies.
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
 use crate::cli::OrphansArgs;
 use crate::context::RuntimeContext;

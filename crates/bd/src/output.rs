@@ -16,6 +16,7 @@ use std::io::{self, Write};
 /// - `updated_at` -> serialized as `updated` (ISO 8601 string)
 /// - `labels` as `Vec<String>`
 /// - `status` as lowercase string
+#[allow(dead_code)]
 #[derive(Serialize)]
 pub struct BeadView {
     pub id: String,
@@ -37,6 +38,7 @@ pub struct BeadView {
     pub close_reason: Option<String>,
 }
 
+#[allow(dead_code)]
 impl BeadView {
     /// Build a `BeadView` from an `Issue` and its labels.
     ///
@@ -90,6 +92,7 @@ pub fn load_labels(conn: &rusqlite::Connection, issue_id: &str) -> Vec<String> {
 }
 
 /// Populate the `labels` field on an issue by loading from the database.
+#[allow(dead_code)]
 pub fn populate_labels(conn: &rusqlite::Connection, issue: &mut Issue) {
     issue.labels = load_labels(conn, &issue.id);
 }

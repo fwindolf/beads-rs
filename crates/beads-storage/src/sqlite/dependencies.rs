@@ -3,14 +3,14 @@
 use std::collections::{HashSet, VecDeque};
 
 use chrono::Utc;
-use rusqlite::{params, Connection};
+use rusqlite::{Connection, params};
 
 use beads_core::dependency::Dependency;
 use beads_core::enums::{DependencyType, EventType};
 use beads_core::issue::Issue;
 
 use crate::error::{Result, StorageError};
-use crate::sqlite::issues::{emit_event, format_datetime, scan_issue, ISSUE_COLUMNS, ISSUE_COLUMNS_PREFIXED};
+use crate::sqlite::issues::{ISSUE_COLUMNS_PREFIXED, emit_event, format_datetime, scan_issue};
 use crate::sqlite::store::SqliteStore;
 use crate::traits::IssueWithDependencyMetadata;
 use crate::traits::TreeNode;
@@ -155,9 +155,7 @@ fn detect_cycle(conn: &Connection, issue_id: &str, depends_on_id: &str) -> Resul
             "SELECT depends_on_id FROM dependencies
              WHERE issue_id = ?1 AND type IN ('blocks', 'parent-child', 'conditional-blocks', 'waits-for')",
         )?;
-        let rows = stmt.query_map(params![current], |row| {
-            row.get::<_, String>(0)
-        })?;
+        let rows = stmt.query_map(params![current], |row| row.get::<_, String>(0))?;
         for row in rows {
             let next = row?;
             if !visited.contains(&next) {
@@ -356,9 +354,7 @@ fn get_deps_with_metadata(
         let dep = Dependency {
             issue_id: row.get("dep_issue_id")?,
             depends_on_id: row.get("dep_depends_on_id")?,
-            dep_type: DependencyType::from(
-                row.get::<_, String>("dep_type")?.as_str(),
-            ),
+            dep_type: DependencyType::from(row.get::<_, String>("dep_type")?.as_str()),
             created_at: crate::sqlite::issues::parse_datetime(
                 &row.get::<_, String>("dep_created_at")?,
             ),
