@@ -73,6 +73,14 @@ bd graph --all
 - **Agent state tracking** — lifecycle management for AI agents
 - **Shell completions** — bash, zsh, fish, PowerShell
 
+### Setup & Workflow (implemented)
+- **`bd quickstart`** — interactive quick-start guide for new users
+- **`bd onboard`** — minimal AGENTS.md snippet for AI agent integration
+- **`bd prime`** — AI-optimized workflow context (MCP detection, stealth mode)
+- **`bd preflight`** — PR readiness checklist with automated `--check` mode
+- **`bd upgrade`** — version tracking with status/review/ack subcommands
+- **`bd worktree`** — git worktree management with shared beads database
+
 ### Stubs (CLI accepts, not yet implemented)
 - External integrations (Jira, Linear, GitLab, GitHub sync)
 - Import/export (Obsidian, markdown)
@@ -99,7 +107,7 @@ beads-rs/
 ## Tests
 
 ```bash
-cargo test --workspace    # 189 tests (unit + integration)
+cargo test --workspace    # 202 tests (unit + integration)
 ```
 
 ## Attribution

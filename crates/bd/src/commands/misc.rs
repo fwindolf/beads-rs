@@ -1,11 +1,9 @@
-//! Miscellaneous stub commands (Phase 8: Utilities, Completion & Polish).
+//! Miscellaneous stub commands.
 //!
-//! Groups simple stubs into a single file to avoid file bloat.
-//! Each stub prints a helpful message and returns `Ok(())`.
+//! Groups simple stubs that don't warrant their own file.
 
 use anyhow::Result;
 
-use crate::cli::{WorktreeArgs, WorktreeCommands};
 use crate::context::RuntimeContext;
 
 /// Execute the `bd sql` command (stub).
@@ -14,55 +12,22 @@ pub fn run_sql(_ctx: &RuntimeContext) -> Result<()> {
     Ok(())
 }
 
-/// Execute the `bd quickstart` command (stub).
-pub fn run_quickstart(_ctx: &RuntimeContext) -> Result<()> {
-    println!("bd quickstart: not yet implemented");
-    Ok(())
-}
-
-/// Execute the `bd onboard` command (stub).
-pub fn run_onboard(_ctx: &RuntimeContext) -> Result<()> {
-    println!("bd onboard: not yet implemented");
-    Ok(())
-}
-
-/// Execute the `bd bootstrap` command (stub).
+/// Execute the `bd bootstrap` command.
+///
+/// With SQLite storage, bootstrap is automatic: `bd init` creates the database
+/// and schema. This command explains how initialization works.
 pub fn run_bootstrap(_ctx: &RuntimeContext) -> Result<()> {
-    println!("bd bootstrap: not yet implemented");
-    Ok(())
-}
-
-/// Execute the `bd preflight` command (stub).
-pub fn run_preflight(_ctx: &RuntimeContext) -> Result<()> {
-    println!("All checks passed");
-    Ok(())
-}
-
-/// Execute the `bd prime` command (stub).
-pub fn run_prime(_ctx: &RuntimeContext) -> Result<()> {
-    println!("bd prime: not yet implemented");
-    Ok(())
-}
-
-/// Execute the `bd upgrade` command (stub).
-pub fn run_upgrade(_ctx: &RuntimeContext) -> Result<()> {
-    println!("bd upgrade: check https://github.com/steveyegge/beads/releases for latest version");
-    Ok(())
-}
-
-/// Execute the `bd worktree` command (stub).
-pub fn run_worktree(_ctx: &RuntimeContext, args: &WorktreeArgs) -> Result<()> {
-    match &args.command {
-        WorktreeCommands::Create(a) => {
-            let name = a.name.as_deref().unwrap_or("<auto>");
-            println!("bd worktree create {}: not yet implemented", name);
-        }
-        WorktreeCommands::Remove(a) => {
-            println!("bd worktree remove {}: not yet implemented", a.name);
-        }
-        WorktreeCommands::List => {
-            println!("bd worktree list: not yet implemented");
-        }
-    }
+    println!("bd bootstrap");
+    println!();
+    println!("With SQLite storage, bootstrap is automatic:");
+    println!("  1. Run 'bd init' to create .beads/ with a fresh database");
+    println!("  2. Issues are stored in .beads/beads.db");
+    println!("  3. JSONL export (.beads/issues.jsonl) syncs via git");
+    println!();
+    println!("On a fresh clone with an existing .beads/issues.jsonl:");
+    println!("  - Run 'bd init' to create the database");
+    println!("  - Then 'bd sync' to import issues from JSONL");
+    println!();
+    println!("No manual bootstrap step is needed.");
     Ok(())
 }

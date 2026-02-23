@@ -358,25 +358,25 @@ pub enum Commands {
     /// Generate shell completions.
     Completion(CompletionArgs),
 
-    /// Quick-start guide (stub).
+    /// Quick-start guide for new users.
     Quickstart,
 
-    /// Onboarding walkthrough (stub).
+    /// Display minimal snippet for AGENTS.md integration.
     Onboard,
 
-    /// Bootstrap a beads project (stub).
+    /// Bootstrap a beads project.
     Bootstrap,
 
     /// Run preflight checks.
-    Preflight,
+    Preflight(PreflightArgs),
 
-    /// Prime the database (stub).
-    Prime,
+    /// Output AI-optimized workflow context.
+    Prime(PrimeArgs),
 
-    /// Check for upgrades.
-    Upgrade,
+    /// Check and manage bd version upgrades.
+    Upgrade(UpgradeArgs),
 
-    /// Manage git worktrees (stub).
+    /// Manage git worktrees with shared beads database.
     Worktree(WorktreeArgs),
 }
 
@@ -2094,7 +2094,69 @@ pub enum CompletionCommands {
 }
 
 // ---------------------------------------------------------------------------
-// Worktree (Phase 8 stub)
+// Preflight
+// ---------------------------------------------------------------------------
+
+/// Arguments for `bd preflight`.
+#[derive(Args, Debug)]
+pub struct PreflightArgs {
+    /// Run checks automatically instead of showing static checklist.
+    #[arg(long)]
+    pub check: bool,
+
+    /// Auto-fix issues where possible (not yet implemented).
+    #[arg(long)]
+    pub fix: bool,
+}
+
+// ---------------------------------------------------------------------------
+// Prime
+// ---------------------------------------------------------------------------
+
+/// Arguments for `bd prime`.
+#[derive(Args, Debug)]
+pub struct PrimeArgs {
+    /// Force full CLI output (ignore MCP detection).
+    #[arg(long)]
+    pub full: bool,
+
+    /// Force MCP mode (minimal output).
+    #[arg(long)]
+    pub mcp: bool,
+
+    /// Stealth mode (no git operations, flush only).
+    #[arg(long)]
+    pub stealth: bool,
+
+    /// Output default content (ignores PRIME.md override).
+    #[arg(long)]
+    pub export: bool,
+}
+
+// ---------------------------------------------------------------------------
+// Upgrade
+// ---------------------------------------------------------------------------
+
+/// Arguments for `bd upgrade`.
+#[derive(Args, Debug)]
+pub struct UpgradeArgs {
+    #[command(subcommand)]
+    pub command: UpgradeCommands,
+}
+
+/// Upgrade subcommands.
+#[derive(Subcommand, Debug)]
+pub enum UpgradeCommands {
+    /// Check if bd has been upgraded since last use.
+    Status,
+    /// Review changes since last bd version.
+    Review,
+    /// Acknowledge the current bd version.
+    Ack,
+}
+
+// ---------------------------------------------------------------------------
+// Worktree
 // ---------------------------------------------------------------------------
 
 /// Arguments for `bd worktree`.
@@ -2107,12 +2169,14 @@ pub struct WorktreeArgs {
 /// Worktree subcommands.
 #[derive(Subcommand, Debug)]
 pub enum WorktreeCommands {
-    /// Create a new worktree.
+    /// Create a new worktree with shared beads database.
     Create(WorktreeCreateArgs),
     /// Remove a worktree.
     Remove(WorktreeRemoveArgs),
-    /// List worktrees.
+    /// List all worktrees with beads state.
     List,
+    /// Show info about the current worktree.
+    Info,
 }
 
 /// Arguments for `bd worktree create`.
@@ -2120,6 +2184,10 @@ pub enum WorktreeCommands {
 pub struct WorktreeCreateArgs {
     /// Name for the new worktree.
     pub name: Option<String>,
+
+    /// Branch name (defaults to worktree name).
+    #[arg(long)]
+    pub branch: Option<String>,
 }
 
 /// Arguments for `bd worktree remove`.
@@ -2127,6 +2195,10 @@ pub struct WorktreeCreateArgs {
 pub struct WorktreeRemoveArgs {
     /// Name of the worktree to remove.
     pub name: String,
+
+    /// Skip safety checks (uncommitted changes, unpushed commits).
+    #[arg(long)]
+    pub force: bool,
 }
 
 #[cfg(test)]

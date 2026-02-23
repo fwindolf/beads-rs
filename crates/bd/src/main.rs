@@ -144,13 +144,13 @@ fn main() {
         Some(Commands::Sql) => commands::misc::run_sql(&ctx),
         Some(Commands::Kv(args)) => commands::kv::run(&ctx, &args),
         Some(Commands::Completion(args)) => commands::completion::run(&ctx, &args),
-        Some(Commands::Quickstart) => commands::misc::run_quickstart(&ctx),
-        Some(Commands::Onboard) => commands::misc::run_onboard(&ctx),
+        Some(Commands::Quickstart) => commands::quickstart::run(&ctx),
+        Some(Commands::Onboard) => commands::onboard::run(&ctx),
         Some(Commands::Bootstrap) => commands::misc::run_bootstrap(&ctx),
-        Some(Commands::Preflight) => commands::misc::run_preflight(&ctx),
-        Some(Commands::Prime) => commands::misc::run_prime(&ctx),
-        Some(Commands::Upgrade) => commands::misc::run_upgrade(&ctx),
-        Some(Commands::Worktree(args)) => commands::misc::run_worktree(&ctx, &args),
+        Some(Commands::Preflight(args)) => commands::preflight::run(&ctx, &args),
+        Some(Commands::Prime(args)) => commands::prime::run(&ctx, &args),
+        Some(Commands::Upgrade(args)) => commands::upgrade::run(&ctx, &args.command),
+        Some(Commands::Worktree(args)) => commands::worktree::run(&ctx, &args),
         None => {
             // No subcommand -- print help
             use clap::CommandFactory;

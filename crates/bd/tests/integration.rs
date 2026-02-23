@@ -972,3 +972,184 @@ fn update_multiple_fields() {
     assert_eq!(issue["title"].as_str().unwrap(), "Updated title");
     assert_eq!(issue["priority"].as_i64().unwrap(), 1);
 }
+
+// ---------------------------------------------------------------------------
+// Phase 8: Setup & maintenance commands
+// ---------------------------------------------------------------------------
+
+#[test]
+fn quickstart_displays_guide() {
+    bd()
+        .args(["quickstart"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Dependency-Aware Issue Tracker"))
+        .stdout(predicate::str::contains("GETTING STARTED"))
+        .stdout(predicate::str::contains("CREATING ISSUES"))
+        .stdout(predicate::str::contains("READY WORK"))
+        .stdout(predicate::str::contains("bd init"))
+        .stdout(predicate::str::contains("Ready to start!"));
+}
+
+#[test]
+fn onboard_displays_agents_snippet() {
+    bd()
+        .args(["onboard"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("bd Onboarding"))
+        .stdout(predicate::str::contains("AGENTS.MD CONTENT"))
+        .stdout(predicate::str::contains("bd prime"))
+        .stdout(predicate::str::contains("bd ready"))
+        .stdout(predicate::str::contains("How it works"));
+}
+
+#[test]
+fn bootstrap_explains_sqlite_workflow() {
+    bd()
+        .args(["bootstrap"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("bootstrap"))
+        .stdout(predicate::str::contains("bd init"))
+        .stdout(predicate::str::contains("SQLite"));
+}
+
+#[test]
+fn preflight_shows_checklist() {
+    bd()
+        .args(["preflight"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("PR Readiness Checklist"))
+        .stdout(predicate::str::contains("cargo test"))
+        .stdout(predicate::str::contains("cargo clippy"));
+}
+
+#[test]
+fn prime_outputs_workflow_context() {
+    let tmp = init_project();
+    bd()
+        .args(["prime", "--full"])
+        .current_dir(tmp.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Beads Workflow Context"))
+        .stdout(predicate::str::contains("SESSION CLOSE PROTOCOL"))
+        .stdout(predicate::str::contains("bd ready"))
+        .stdout(predicate::str::contains("bd create"));
+}
+
+#[test]
+fn prime_mcp_mode_minimal() {
+    let tmp = init_project();
+    bd()
+        .args(["prime", "--mcp"])
+        .current_dir(tmp.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Beads Issue Tracker Active"))
+        .stdout(predicate::str::contains("Core Rules"));
+}
+
+#[test]
+fn prime_stealth_mode_no_git() {
+    let tmp = init_project();
+    bd()
+        .args(["prime", "--full", "--stealth"])
+        .current_dir(tmp.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("flush-only"));
+}
+
+#[test]
+fn prime_silent_outside_beads_project() {
+    let tmp = TempDir::new().unwrap();
+    bd()
+        .args(["prime"])
+        .current_dir(tmp.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::is_empty());
+}
+
+#[test]
+fn upgrade_status_no_beads() {
+    // Outside a beads project, should still work
+    bd()
+        .args(["upgrade", "status"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("bd version"));
+}
+
+#[test]
+fn upgrade_status_json() {
+    bd()
+        .args(["upgrade", "status", "--json"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("current_version"));
+}
+
+#[test]
+fn upgrade_ack_in_project() {
+    let tmp = init_project();
+    bd()
+        .args(["upgrade", "ack"])
+        .current_dir(tmp.path())
+        .assert()
+        .success();
+}
+
+#[test]
+fn worktree_info_shows_current() {
+    let tmp = init_project();
+
+    // Initialize as a git repo
+    std::process::Command::new("git")
+        .args(["init"])
+        .current_dir(tmp.path())
+        .output()
+        .unwrap();
+
+    bd()
+        .args(["worktree", "info"])
+        .current_dir(tmp.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Branch"))
+        .stdout(predicate::str::contains("Beads"));
+}
+
+#[test]
+fn worktree_list_in_git_repo() {
+    let tmp = init_project();
+
+    // Initialize as a git repo first
+    std::process::Command::new("git")
+        .args(["init"])
+        .current_dir(tmp.path())
+        .output()
+        .unwrap();
+
+    std::process::Command::new("git")
+        .args(["add", "."])
+        .current_dir(tmp.path())
+        .output()
+        .unwrap();
+
+    std::process::Command::new("git")
+        .args(["commit", "-m", "init", "--allow-empty"])
+        .current_dir(tmp.path())
+        .output()
+        .unwrap();
+
+    bd()
+        .args(["worktree", "list"])
+        .current_dir(tmp.path())
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("NAME"));
+}
